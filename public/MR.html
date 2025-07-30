@@ -1,0 +1,2718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Editor with Live Preview</title>
+  <style id="editor-styles">
+    :root {
+      --color-primary: #000000;
+      --color-secondary: #ffffff;
+      --color-text: #1a1a1a;
+      --color-background: #ffffff;
+      --color-border: #e1e4e8;
+      --color-accent: #0366d6;
+      --editor-bg: #ffffff;
+      --preview-bg: #ffffff;
+      --sidebar-bg: #f6f8fa;
+      --code-bg: #f6f8fa;
+      --border-color: #e1e4e8;
+      --button-bg: #f6f8fa;
+      --button-hover-bg: #e1e4e8;
+      --notification-bg: #f6f8fa;
+      --notification-border: #e1e4e8;
+      --blockquote-border: #dfe2e5;
+      --blockquote-text: #6a737d;
+      --table-stripe: #f6f8fa;
+      --placeholder-text: #6a737d;
+      --tab-active-bg: #ffffff;
+      --tab-inactive-bg: #f6f8fa;
+      --tab-active-border: #0366d6;
+      --tab-hover-bg: #f0f0f0;
+    }
+
+    [data-theme="dark"] {
+      --color-primary: #ffffff;
+      --color-secondary: #0d1117;
+      --color-text: #f0f6fc;
+      --color-background: #0d1117;
+      --color-border: #30363d;
+      --color-accent: #58a6ff;
+      --editor-bg: #0d1117;
+      --preview-bg: #0d1117;
+      --sidebar-bg: #161b22;
+      --code-bg: #161b22;
+      --border-color: #30363d;
+      --button-bg: #21262d;
+      --button-hover-bg: #30363d;
+      --notification-bg: #161b22;
+      --notification-border: #30363d;
+      --blockquote-border: #30363d;
+      --blockquote-text: #8b949e;
+      --table-stripe: #161b22;
+      --placeholder-text: #8b949e;
+      --tab-active-bg: #0d1117;
+      --tab-inactive-bg: #161b22;
+      --tab-active-border: #58a6ff;
+      --tab-hover-bg: #21262d;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      line-height: 1.6;
+      color: var(--color-text);
+      background-color: var(--color-background);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100%;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background-color: var(--sidebar-bg);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .tabs-container {
+      display: flex;
+      background-color: var(--sidebar-bg);
+      overflow-x: auto;
+      border-bottom: 1px solid var(--border-color);
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .tabs-container::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      display: none;
+    }
+    
+    .tabs-container:hover::-webkit-scrollbar {
+      height: 5px;
+      display: block;
+    }
+    
+    .tab {
+      display: flex;
+      align-items: center;
+      min-width: 150px;
+      max-width: 200px;
+      padding: 8px 15px;
+      background-color: var(--tab-inactive-bg);
+      border-right: 1px solid var(--border-color);
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background-color 0.2s ease;
+    }
+    
+    .tab:hover {
+      background-color: var(--tab-hover-bg);
+    }
+    
+    .tab.active {
+      background-color: var(--tab-active-bg);
+      border-bottom: 2px solid var(--tab-active-border);
+    }
+    
+    .tab-title {
+      margin-right: auto;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 14px;
+    }
+    
+    .tab-modified {
+      color: var(--color-accent);
+      margin-left: 5px;
+      font-size: 10px;
+    }
+    
+    .tab-close {
+      margin-left: 8px;
+      font-size: 14px;
+      opacity: 0.5;
+      padding: 0 3px;
+      border-radius: 50%;
+      transition: opacity 0.2s ease, background-color 0.2s ease;
+    }
+    
+    .tab-close:hover {
+      opacity: 1;
+      background-color: rgba(128, 128, 128, 0.2);
+    }
+    
+    .new-tab-button {
+      padding: 8px 15px;
+      background-color: var(--tab-inactive-bg);
+      border-right: 1px solid var(--border-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+    }
+
+    .toolbar h1 {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    
+    .file-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .mobile-actions {
+      display: none;
+    }
+    
+    .preview-toggle-btn {
+      display: none;
+      background-color: var(--button-bg);
+      border: 1px solid var(--border-color);
+      color: var(--color-text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    
+    .preview-toggle-btn:hover {
+      background-color: var(--button-hover-bg);
+      border-color: var(--color-accent);
+    }
+    
+    .file-input {
+      display: none;
+    }
+    
+    .file-upload-btn, .file-download-btn {
+      background-color: var(--button-bg);
+      border: 1px solid var(--border-color);
+      color: var(--color-text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    
+    .file-upload-btn:hover, .file-download-btn:hover {
+      background-color: var(--button-hover-bg);
+      border-color: var(--color-accent);
+    }
+
+    .theme-selector {
+      background: var(--button-bg);
+      border: 1px solid var(--border-color);
+      color: var(--color-text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .theme-selector:hover {
+      background-color: var(--button-hover-bg);
+      border-color: var(--color-accent);
+    }
+
+    .theme-toggle {
+      background: var(--button-bg);
+      border: 1px solid var(--border-color);
+      color: var(--color-text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle:hover {
+      background-color: var(--button-hover-bg);
+      border-color: var(--color-accent);
+    }
+
+    .content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Main containers that take full height */
+    .editor-container, .preview-container {
+      flex: 1;
+      height: 100%;
+      position: relative;
+      background-color: var(--editor-bg);
+      padding-bottom: 130px;
+    }
+
+    .preview-container {
+      background-color: var(--preview-bg);
+      border-left: 1px solid var(--border-color);
+    }
+
+    /* Scrollable area for the preview container only */
+    .preview-scroll-area {
+      height: 100%;
+      overflow-y: auto;
+      padding: 20px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(136, 136, 136, 0.3) transparent;
+    }
+
+    /* Editor container should not have scroll area */
+    .editor-container {
+      overflow: hidden; /* Prevent any unwanted scrolling */
+    }
+    
+    /* Make the editor itself scrollable */
+    #editor {
+      height: 100%;
+      width: 100%;
+      overflow-y: auto;
+      padding: 20px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(136, 136, 136, 0.3) transparent;
+      padding-bottom: 120px; /* Increased padding to prevent content hiding behind format bar */
+    }
+
+    /* Custom scrollbar for preview */
+    .preview-scroll-area::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .preview-scroll-area::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .preview-scroll-area::-webkit-scrollbar-thumb {
+      background: rgba(136, 136, 136, 0.3);
+      border-radius: 4px;
+    }
+
+    .preview-scroll-area::-webkit-scrollbar-thumb:hover {
+      background: rgba(136, 136, 136, 0.5);
+    }
+
+    /* Custom scrollbar for editor */
+    #editor::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #editor::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #editor::-webkit-scrollbar-thumb {
+      background: rgba(136, 136, 136, 0.3);
+      border-radius: 4px;
+    }
+
+    #editor::-webkit-scrollbar-thumb:hover {
+      background: rgba(136, 136, 136, 0.5);
+    }
+
+    /* Dark mode scrollbar */
+    [data-theme="dark"] .preview-scroll-area::-webkit-scrollbar-thumb,
+    [data-theme="dark"] #editor::-webkit-scrollbar-thumb {
+      background: rgba(136, 136, 136, 0.3);
+    }
+
+    [data-theme="dark"] .preview-scroll-area::-webkit-scrollbar-thumb:hover,
+    [data-theme="dark"] #editor::-webkit-scrollbar-thumb:hover {
+      background: rgba(136, 136, 136, 0.5);
+    }
+    
+    .preview-maximize {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: var(--button-bg);
+      border: 1px solid var(--border-color);
+      color: var(--color-text);
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      opacity: 0.6;
+      transition: opacity 0.2s ease, background-color 0.2s ease;
+      z-index: 10;
+    }
+    
+    .preview-maximize:hover {
+      opacity: 1;
+      background-color: var(--button-hover-bg);
+    }
+    
+    .preview-back {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: var(--button-bg);
+      border: 1px solid var(--border-color);
+      color: var(--color-text);
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: background-color 0.2s ease;
+      z-index: 10;
+    }
+    
+    .preview-back:hover {
+      background-color: var(--button-hover-bg);
+    }
+
+    #editor {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background-color: transparent;
+      color: var(--color-text);
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      resize: none;
+      outline: none;
+    }
+
+    #editor::placeholder {
+      color: var(--placeholder-text);
+    }
+
+    #preview {
+      max-width: 100%;
+      overflow-wrap: break-word;
+    }
+
+    .preview-content {
+      padding-right: 15px;
+      padding-bottom: 120px; /* Add bottom padding to keep content above format bar */
+    }
+
+    /* Markdown Preview Styles */
+    .preview-content h1, .preview-content h2, .preview-content h3, 
+    .preview-content h4, .preview-content h5, .preview-content h6 {
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    .preview-content h1 {
+      font-size: 2em;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.3em;
+    }
+
+    .preview-content h2 {
+      font-size: 1.5em;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.3em;
+    }
+
+    .preview-content p {
+      margin-bottom: 1rem;
+    }
+
+    .preview-content a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+
+    .preview-content a:hover {
+      text-decoration: underline;
+    }
+
+    .preview-content ul, .preview-content ol {
+      margin-bottom: 1rem;
+      padding-left: 2rem;
+    }
+
+    .preview-content blockquote {
+      padding: 0 1rem;
+      color: var(--blockquote-text);
+      border-left: 0.25rem solid var(--blockquote-border);
+      margin: 0 0 1rem;
+    }
+
+    .preview-content pre {
+      background-color: var(--code-bg);
+      border-radius: 6px;
+      padding: 16px;
+      overflow: auto;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .preview-content code {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 85%;
+      background-color: var(--code-bg);
+      border-radius: 3px;
+      padding: 0.2em 0.4em;
+      color: var(--color-text);
+    }
+
+    .preview-content pre code {
+      background-color: transparent;
+      padding: 0;
+      border-radius: 0;
+      color: inherit;
+    }
+
+    .preview-content table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    .preview-content table th, .preview-content table td {
+      padding: 6px 13px;
+      border: 1px solid var(--border-color);
+    }
+
+    .preview-content table tr {
+      background-color: var(--preview-bg);
+      border-top: 1px solid var(--border-color);
+    }
+
+    .preview-content table tr:nth-child(2n) {
+      background-color: var(--table-stripe);
+    }
+
+    .preview-content img {
+      max-width: 100%;
+    }
+
+    .preview-content hr {
+      height: 0.25em;
+      padding: 0;
+      margin: 24px 0;
+      background-color: var(--border-color);
+      border: 0;
+    }
+
+    /* Custom theme selector styles */
+    .theme-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .theme-dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: var(--notification-bg);
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.1);
+      z-index: 1;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .theme-dropdown-content a {
+      color: var(--color-text);
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .theme-dropdown-content a:hover {
+      background-color: var(--button-hover-bg);
+    }
+    
+    /* Add Element dropdown styles */
+    .add-element-dropdown {
+      position: relative;
+      display: inline-block;
+      margin-right: 15px;
+    }
+    
+    .add-element-btn {
+      background-color: var(--button-bg);
+      border: 1px solid var(--border-color);
+      color: var(--color-text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    
+    .add-element-btn:hover {
+      background-color: var(--button-hover-bg);
+      border-color: var(--color-accent);
+    }
+    
+    .add-element-content {
+      display: none;
+      position: absolute;
+      left: 0;
+      max-height: 320px;
+      overflow-y: auto;
+      background-color: var(--notification-bg);
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      scrollbar-width: thin;
+      -ms-overflow-style: none;
+    }
+    
+    .add-element-content::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .add-element-content::-webkit-scrollbar-thumb {
+      background: rgba(136, 136, 136, 0.5);
+      border-radius: 4px;
+    }
+    
+    .add-element-content a {
+      color: var(--color-text);
+      padding: 8px 16px;
+      text-decoration: none;
+      display: block;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      font-size: 14px;
+    }
+    
+    .add-element-content a:hover {
+      background-color: var(--button-hover-bg);
+    }
+    
+    .add-element-content a.keyboard-active {
+      background-color: var(--button-hover-bg);
+      outline: 1px solid var(--color-accent);
+    }
+    
+    /* Format Bar */
+    .format-bar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background-color: var(--notification-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px;
+      z-index: 1000;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* Internet Explorer and Edge */
+      pointer-events: none; /* Make format bar not block scrolling when inactive */
+      max-width: 90%; /* Prevent format bar from being too wide */
+    }
+    
+    .format-bar::-webkit-scrollbar {
+      display: none; /* Chrome, Safari and Opera */
+    }
+    
+    .format-bar.active {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto; /* Re-enable pointer events when active */
+    }
+    
+    .format-bar-inner {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 5px;
+      max-width: 100%;
+    }
+    
+    .format-group {
+      display: flex;
+      gap: 4px;
+      margin: 0 5px;
+      padding-right: 5px;
+      border-right: 1px solid var(--border-color);
+    }
+    
+    .format-group:last-child {
+      border-right: none;
+      padding-right: 0;
+    }
+    
+    .format-bar button {
+      background-color: var(--button-bg);
+      border: 1px solid var(--border-color);
+      color: var(--color-text);
+      min-width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s ease;
+      padding: 0;
+    }
+    
+    .format-bar button:hover {
+      background-color: var(--button-hover-bg);
+      transform: translateY(-2px);
+      border-color: var(--color-accent);
+    }
+    
+    .format-bar button:active {
+      transform: translateY(0);
+    }
+    
+    @media (max-width: 768px) {
+      .format-bar {
+        padding: 5px;
+      }
+      
+      .format-group {
+        margin: 0 2px;
+        padding-right: 2px;
+      }
+      
+      .format-bar button {
+        min-width: 36px;
+        height: 36px;
+      }
+    }
+
+    .show {
+      display: block;
+    }
+
+    .maximized-preview {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      z-index: 1000;
+      background-color: var(--preview-bg);
+      overflow-y: auto;
+      padding: 50px 20px 20px;
+    }
+    
+    .mobile-preview-mode .editor-container,
+    .mobile-preview-mode .toolbar {
+      display: none;
+    }
+    
+    .mobile-preview-mode .preview-container {
+      height: 100vh;
+      border: none;
+      padding-top: 50px;
+    }
+    
+    .mobile-preview-mode .preview-back {
+      display: flex;
+    }
+    
+    @media (max-width: 768px) {
+      .content {
+        flex-direction: column;
+      }
+
+      .editor-container, .preview-container {
+        flex: none;
+        height: 50vh;
+      }
+
+      .preview-container {
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+      }
+      
+      .preview-toggle-btn {
+        display: flex;
+      }
+      
+      .mobile-actions {
+        display: flex;
+        margin-left: auto;
+      }
+      
+      .theme-dropdown,
+      .theme-toggle {
+        display: none;
+      }
+      
+      .add-element-dropdown {
+        position: fixed;
+        left: 10px;
+        top: 70px;
+        z-index: 50;
+        margin-right: 0;
+      }
+      
+      .add-element-content {
+        max-height: 250px;
+      }
+      
+      .mobile-preview-mode .content {
+        flex-direction: column;
+      }
+      
+      .mobile-preview-mode .add-element-dropdown {
+        display: none;
+      }
+    }
+
+    /* Notification styles */
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      background-color: var(--notification-bg);
+      color: var(--color-text);
+      padding: 12px 20px;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      transition: transform 0.3s ease-out;
+      border: 1px solid var(--notification-border);
+      max-width: 80%;
+      text-align: center;
+    }
+    
+    .notification.show {
+      transform: translateX(-50%) translateY(0);
+    }
+    
+    .notification.error {
+      border-color: #f85149;
+      background-color: #0d1117;
+      color: #f85149;
+    }
+    
+    [data-theme="dark"] .notification.error {
+      background-color: #161b22;
+      border-color: #f85149;
+    }
+    
+    /* Drag and drop styles */
+    .drag-over {
+      background-color: rgba(3, 102, 214, 0.1);
+      border: 2px dashed var(--color-accent);
+    }
+    
+    [data-theme="dark"] .drag-over {
+      background-color: rgba(88, 166, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar">
+      <h1>Markdown Editor</h1>
+      <div class="toolbar-actions">
+        <div class="file-actions">
+          <input type="file" id="file-upload" class="file-input" accept=".md, .markdown, .txt" />
+          <label for="file-upload" class="file-upload-btn">📁 Open File</label>
+          <button id="file-download" class="file-download-btn">💾 Save File</button>
+        </div>
+        <div class="add-element-dropdown">
+          <button id="add-element-button" class="add-element-btn">➕ Add Element</button>
+          <div id="add-element-dropdown" class="add-element-content">
+            <a data-element="heading1">Heading 1</a>
+            <a data-element="heading2">Heading 2</a>
+            <a data-element="heading3">Heading 3</a>
+            <a data-element="heading4">Heading 4</a>
+            <a data-element="heading5">Heading 5</a>
+            <a data-element="heading6">Heading 6</a>
+            <a data-element="bold">Bold text</a>
+            <a data-element="italic">Italic text</a>
+            <a data-element="strikethrough">Strikethrough text</a>
+            <a data-element="highlight">Highlighted text</a>
+            <a data-element="blockquote">Blockquote</a>
+            <a data-element="code">Code block</a>
+            <a data-element="inlinecode">Inline code</a>
+            <a data-element="tasklist">Task list</a>
+            <a data-element="numberedlist">Numbered list</a>
+            <a data-element="bulletlist">Bullet list</a>
+            <a data-element="definition">Definition list</a>
+            <a data-element="link">Link</a>
+            <a data-element="image">Image</a>
+            <a data-element="table">Table</a>
+            <a data-element="footnote">Footnote</a>
+            <a data-element="horizontalrule">Horizontal line</a>
+            <a data-element="comment">Comment</a>
+            <a data-element="codeblock-js">JavaScript code</a>
+            <a data-element="codeblock-html">HTML code</a>
+            <a data-element="codeblock-css">CSS code</a>
+            <a data-element="codeblock-python">Python code</a>
+            <a data-element="codeblock-bash">Bash/Shell code</a>
+          </div>
+        </div>
+        <div class="mobile-actions">
+          <button id="preview-toggle" class="preview-toggle-btn">👁️ Preview</button>
+        </div>
+        <button id="dark-mode-toggle" class="theme-toggle">🌙 Dark Mode</button>
+        <div class="theme-dropdown">
+          <button id="theme-button" class="theme-selector">Themes ▾</button>
+          <div id="theme-dropdown" class="theme-dropdown-content">
+            <a data-theme="default">Default</a>
+            <a data-theme="github">GitHub</a>
+            <a data-theme="monokai">Monokai</a>
+            <a data-theme="dracula">Dracula</a>
+            <a data-theme="nord">Nord</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tabs-container" id="tabs-container">
+      <div class="tab active" data-tab-id="tab-1">
+        <span class="tab-title">untitled.md</span>
+        <span class="tab-modified" style="display: none;">●</span>
+        <span class="tab-close">×</span>
+      </div>
+      <div class="new-tab-button" id="new-tab-button">+</div>
+    </div>
+    <div class="content">
+      <div class="editor-container">
+        <textarea id="editor" spellcheck="false" placeholder="Type your markdown here..."></textarea>
+      </div>
+      <div class="preview-container">
+        <div class="preview-scroll-area">
+          <button id="preview-maximize" class="preview-maximize">⤢</button>
+          <button id="preview-back" class="preview-back">←</button>
+          <div id="preview" class="preview-content"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Fixed format bar -->
+    <div id="format-bar" class="format-bar">
+      <div class="format-bar-inner">
+        <div class="format-group">
+          <button data-element="heading1" title="Heading 1">H1</button>
+          <button data-element="heading2" title="Heading 2">H2</button>
+          <button data-element="heading3" title="Heading 3">H3</button>
+        </div>
+        <div class="format-group">
+          <button data-element="bold" title="Bold"><strong>B</strong></button>
+          <button data-element="italic" title="Italic"><em>I</em></button>
+          <button data-element="strikethrough" title="Strikethrough"><s>S</s></button>
+        </div>
+        <div class="format-group">
+          <button data-element="bulletlist" title="Bullet List">•</button>
+          <button data-element="numberedlist" title="Numbered List">#</button>
+          <button data-element="tasklist" title="Task List">☑</button>
+        </div>
+        <div class="format-group">
+          <button data-element="link" title="Link">🔗</button>
+          <button data-element="image" title="Image">🖼️</button>
+          <button data-element="table" title="Table">⊞</button>
+          <button data-element="code" title="Code">{ }</button>
+        </div>
+        <div class="format-group">
+          <button data-element="horizontalrule" title="Horizontal Line">—</button>
+          <button data-element="blockquote" title="Blockquote">❞</button>
+          <button data-element="comment" title="Comment">💬</button>
+          <button data-element="footnote" title="Footnote">*</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load marked.js for Markdown parsing -->
+  <script src="https://lib.youware.com/youware-lib-editor.1752562065.js" id="yourware-lib"></script><script src="https://lib.youware.com/youware-lib-editor.1752562065.js" id="yourware-lib"></script><script src="https://lib.youware.com/youware-lib-editor.1752562065.js" id="yourware-lib"></script><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <!-- Load highlight.js for syntax highlighting -->
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/default.min.css" id="highlight-theme">
+
+  <script>
+    // Initialize variables
+    const editor = document.getElementById('editor');
+    const preview = document.getElementById('preview');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const themeButton = document.getElementById('theme-button');
+    const themeDropdown = document.getElementById('theme-dropdown');
+    const themeLinks = document.querySelectorAll('#theme-dropdown a');
+    const highlightTheme = document.getElementById('highlight-theme');
+    const editorContainer = document.querySelector('.editor-container');
+    const tabsContainer = document.getElementById('tabs-container');
+    const newTabButton = document.getElementById('new-tab-button');
+    
+    // Add Element UI elements
+    const addElementButton = document.getElementById('add-element-button');
+    const addElementDropdown = document.getElementById('add-element-dropdown');
+    const addElementLinks = document.querySelectorAll('#add-element-dropdown a');
+    
+    // Tab management variables
+    let tabs = [];
+    let activeTabId = 'tab-1';
+    let tabCounter = 1;
+    
+    // Local storage keys
+    const STORAGE_KEY_TABS = 'markdown_editor_tabs';
+    const STORAGE_KEY_ACTIVE_TAB = 'markdown_editor_active_tab';
+    const STORAGE_KEY_TAB_COUNTER = 'markdown_editor_tab_counter';
+    
+    // Default markdown content
+    const defaultMarkdown = `# Markdown Editor with Live Preview
+
+## Features
+- **Live Preview**: See your markdown rendered in real-time
+- **Syntax Highlighting**: Code blocks are highlighted for better readability
+- **Dark Mode**: Toggle between light and dark themes
+- **Custom Themes**: Choose from various editor themes
+
+## Markdown Example
+
+### Text Formatting
+*Italic text* and **bold text**
+
+### Lists
+- Item 1
+- Item 2
+  - Nested item 1
+  - Nested item 2
+
+### Code Blocks
+\`\`\`javascript
+function sayHello() {
+  console.log("Hello, world!");
+}
+\`\`\`
+
+### Tables
+| Header 1 | Header 2 |
+| -------- | -------- |
+| Cell 1   | Cell 2   |
+| Cell 3   | Cell 4   |
+
+### Blockquotes
+> This is a blockquote
+> It can span multiple lines
+
+### Links
+[Visit GitHub](https://github.com)
+
+### Images
+![Markdown Logo](https://markdown-here.com/img/icon256.png)
+`;
+
+    // Theme configurations
+    const themes = {
+      default: {
+        variables: {
+          light: {
+            '--editor-bg': '#ffffff',
+            '--preview-bg': '#ffffff',
+            '--sidebar-bg': '#f6f8fa',
+            '--code-bg': '#f8f8f8',
+            '--border-color': '#e1e4e8',
+            '--button-bg': '#f6f8fa',
+            '--button-hover-bg': '#e1e4e8',
+            '--color-accent': '#0366d6',
+            '--color-text': '#1a1a1a',
+            '--color-background': '#ffffff'
+          },
+          dark: {
+            '--editor-bg': '#0d1117',
+            '--preview-bg': '#0d1117',
+            '--sidebar-bg': '#161b22',
+            '--code-bg': '#1e1e1e',
+            '--border-color': '#30363d',
+            '--button-bg': '#21262d',
+            '--button-hover-bg': '#30363d',
+            '--color-accent': '#58a6ff',
+            '--color-text': '#f0f6fc',
+            '--color-background': '#0d1117'
+          }
+        }
+      },
+      github: {
+        variables: {
+          light: {
+            '--editor-bg': '#ffffff',
+            '--preview-bg': '#ffffff',
+            '--sidebar-bg': '#f6f8fa',
+            '--code-bg': '#f6f8fa',
+            '--border-color': '#e1e4e8',
+            '--button-bg': '#f6f8fa',
+            '--button-hover-bg': '#e1e4e8',
+            '--color-accent': '#0366d6',
+            '--color-text': '#24292e',
+            '--color-background': '#ffffff'
+          },
+          dark: {
+            '--editor-bg': '#0d1117',
+            '--preview-bg': '#0d1117',
+            '--sidebar-bg': '#161b22',
+            '--code-bg': '#0d1117',
+            '--border-color': '#30363d',
+            '--button-bg': '#21262d',
+            '--button-hover-bg': '#30363d',
+            '--color-accent': '#58a6ff',
+            '--color-text': '#c9d1d9',
+            '--color-background': '#0d1117'
+          }
+        }
+      },
+      monokai: {
+        variables: {
+          light: {
+            '--editor-bg': '#ffffff',
+            '--preview-bg': '#ffffff',
+            '--sidebar-bg': '#f6f8fa',
+            '--code-bg': '#23241f',
+            '--border-color': '#e1e4e8',
+            '--button-bg': '#f6f8fa',
+            '--button-hover-bg': '#e1e4e8',
+            '--color-accent': '#a6e22e',
+            '--color-text': '#1a1a1a',
+            '--color-background': '#ffffff'
+          },
+          dark: {
+            '--editor-bg': '#272822',
+            '--preview-bg': '#272822',
+            '--sidebar-bg': '#1e1e1e',
+            '--code-bg': '#23241f',
+            '--border-color': '#444',
+            '--button-bg': '#1e1e1e',
+            '--button-hover-bg': '#444',
+            '--color-accent': '#f92672',
+            '--color-text': '#f8f8f2',
+            '--color-background': '#272822'
+          }
+        }
+      },
+      dracula: {
+        variables: {
+          light: {
+            '--editor-bg': '#ffffff',
+            '--preview-bg': '#ffffff',
+            '--sidebar-bg': '#f6f8fa',
+            '--code-bg': '#282a36',
+            '--border-color': '#e1e4e8',
+            '--button-bg': '#f6f8fa',
+            '--button-hover-bg': '#e1e4e8',
+            '--color-accent': '#ff79c6',
+            '--color-text': '#1a1a1a',
+            '--color-background': '#ffffff'
+          },
+          dark: {
+            '--editor-bg': '#282a36',
+            '--preview-bg': '#282a36',
+            '--sidebar-bg': '#44475a',
+            '--code-bg': '#282a36',
+            '--border-color': '#6272a4',
+            '--button-bg': '#44475a',
+            '--button-hover-bg': '#6272a4',
+            '--color-accent': '#8be9fd',
+            '--color-text': '#f8f8f2',
+            '--color-background': '#282a36'
+          }
+        }
+      },
+      nord: {
+        variables: {
+          light: {
+            '--editor-bg': '#ffffff',
+            '--preview-bg': '#ffffff',
+            '--sidebar-bg': '#f6f8fa',
+            '--code-bg': '#2e3440',
+            '--border-color': '#e1e4e8',
+            '--button-bg': '#f6f8fa',
+            '--button-hover-bg': '#e1e4e8',
+            '--color-accent': '#81a1c1',
+            '--color-text': '#1a1a1a',
+            '--color-background': '#ffffff'
+          },
+          dark: {
+            '--editor-bg': '#2e3440',
+            '--preview-bg': '#2e3440',
+            '--sidebar-bg': '#3b4252',
+            '--code-bg': '#2e3440',
+            '--border-color': '#4c566a',
+            '--button-bg': '#3b4252',
+            '--button-hover-bg': '#4c566a',
+            '--color-accent': '#88c0d0',
+            '--color-text': '#d8dee9',
+            '--color-background': '#2e3440'
+          }
+        }
+      }
+    };
+
+    // Set initial dark mode state from localStorage or system preference
+    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let isDarkMode = localStorage.getItem('darkMode') === 'true' || 
+                    (localStorage.getItem('darkMode') === null && prefersDarkMode);
+    
+    // Set initial theme from localStorage or default
+    let currentTheme = localStorage.getItem('theme') || 'default';
+
+    // Format bar variables
+    let formatBar;
+    let formatBarVisible = false;
+    let formatBarDebounceTimer = null;
+    
+    // Initialize editor with default content and render preview
+    window.addEventListener('DOMContentLoaded', () => {
+      // Load saved tabs from local storage or initialize with default tab
+      loadSavedTabs();
+      
+      // Set up editor with content from active tab
+      const activeTab = tabs.find(t => t.id === activeTabId);
+      if (activeTab) {
+        editor.value = activeTab.content;
+      } else {
+        editor.value = defaultMarkdown;
+      }
+      
+      renderMarkdown();
+      updateTheme(currentTheme);
+      updateDarkMode();
+      setupDragAndDrop();
+      setupTabSystem();
+      setupFormatBar();
+      setupEventListeners();
+    });
+    
+    // Set up all event listeners
+    function setupEventListeners() {
+      // Editor input event with debounce for real-time saving
+      let saveTimeout;
+      editor.addEventListener('input', () => {
+        renderMarkdown();
+        updateTabModifiedState(activeTabId, true);
+        
+        // Automatically scroll to show the cursor position
+        autoScrollToBottom();
+        
+        // Check if we need to ensure content visibility
+        if (formatBarVisible) {
+          ensureContentVisibility();
+        }
+        
+        // Clear previous timeout
+        if (saveTimeout) {
+          clearTimeout(saveTimeout);
+        }
+        
+        // Debounce saving to local storage to avoid performance issues
+        saveTimeout = setTimeout(() => {
+          // Save changes to local storage in real-time
+          saveTabContent();
+          saveTabsToLocalStorage();
+        }, 500); // 500ms debounce delay
+      });
+      
+        // Selection event for format bar
+      document.addEventListener('selectionchange', () => {
+        if (document.activeElement === editor) {
+          checkSelection();
+        }
+      });
+      
+      // Dark mode toggle
+      darkModeToggle.addEventListener('click', () => {
+        isDarkMode = !isDarkMode;
+        updateDarkMode();
+      });
+      
+      // Theme dropdown
+      themeButton.addEventListener('click', () => {
+        themeDropdown.classList.toggle('show');
+        // Hide add element dropdown if open
+        if (addElementDropdown.classList.contains('show')) {
+          addElementDropdown.classList.remove('show');
+        }
+      });
+      
+      // Theme selection
+      themeLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          updateTheme(link.getAttribute('data-theme'));
+          themeDropdown.classList.remove('show');
+        });
+      });
+      
+      // Add Element dropdown toggle
+      addElementButton.addEventListener('click', () => {
+        addElementDropdown.classList.toggle('show');
+        // Hide theme dropdown if open
+        if (themeDropdown.classList.contains('show')) {
+          themeDropdown.classList.remove('show');
+        }
+        
+        // If opening the dropdown, focus the first item for keyboard navigation
+        if (addElementDropdown.classList.contains('show')) {
+          setTimeout(() => {
+            const firstItem = addElementDropdown.querySelector('a');
+            if (firstItem) {
+              firstItem.classList.add('keyboard-active');
+              addElementDropdown.setAttribute('data-active-index', '0');
+            }
+          }, 10);
+        }
+      });
+      
+      // Add Element insertion handlers
+      addElementLinks.forEach((link, index) => {
+        link.setAttribute('data-index', index);
+        link.addEventListener('click', () => {
+          const elementType = link.getAttribute('data-element');
+          insertElement(elementType);
+        });
+        
+        // Add mouse hover effect to update active item
+        link.addEventListener('mouseenter', () => {
+          // Clear any existing active items
+          document.querySelectorAll('#add-element-dropdown a').forEach(item => {
+            item.classList.remove('keyboard-active');
+          });
+          
+          // Set this item as active
+          link.classList.add('keyboard-active');
+          addElementDropdown.setAttribute('data-active-index', index);
+        });
+      });
+      
+      // File upload and download event listeners
+      document.getElementById('file-upload').addEventListener('change', handleFileUpload);
+      document.getElementById('file-download').addEventListener('click', handleFileDownload);
+      
+      // Add event listener for unload to save tabs before closing
+      window.addEventListener('beforeunload', () => {
+        saveTabContent();  // Save the active tab content
+        saveTabsToLocalStorage();
+      });
+      
+      // Preview toggle functionality
+      const previewToggleBtn = document.getElementById('preview-toggle');
+      const previewMaximizeBtn = document.getElementById('preview-maximize');
+      const previewBackBtn = document.getElementById('preview-back');
+      const containerElement = document.querySelector('.container');
+      
+      previewToggleBtn.addEventListener('click', () => {
+        containerElement.classList.add('mobile-preview-mode');
+      });
+      
+      previewBackBtn.addEventListener('click', () => {
+        containerElement.classList.remove('mobile-preview-mode');
+      });
+      
+      previewMaximizeBtn.addEventListener('click', () => {
+        const previewContainer = document.querySelector('.preview-container');
+        
+        if (previewContainer.classList.contains('maximized-preview')) {
+          // Exit maximized mode
+          previewContainer.classList.remove('maximized-preview');
+          previewMaximizeBtn.innerHTML = '⤢';
+        } else {
+          // Enter maximized mode
+          previewContainer.classList.add('maximized-preview');
+          previewMaximizeBtn.innerHTML = '⤓';
+        }
+      });
+      
+      // Add keyboard event listeners
+      document.addEventListener('keydown', handleDropdownKeyboard);
+      document.addEventListener('keydown', handleTabKeyboardShortcuts);
+      
+      // Close the dropdown menus if the user clicks outside of them
+      window.addEventListener('click', (event) => {
+        if (!event.target.matches('.theme-selector')) {
+          if (themeDropdown.classList.contains('show')) {
+            themeDropdown.classList.remove('show');
+          }
+        }
+        
+        if (!event.target.matches('.add-element-btn')) {
+          if (addElementDropdown.classList.contains('show')) {
+            addElementDropdown.classList.remove('show');
+          }
+        }
+      });
+      
+      // Handle responsive design
+      window.addEventListener('resize', () => {
+        // Reset maximized preview on window resize
+        const previewContainer = document.querySelector('.preview-container');
+        if (previewContainer.classList.contains('maximized-preview')) {
+          previewContainer.classList.remove('maximized-preview');
+          previewMaximizeBtn.innerHTML = '⤢';
+        }
+        
+        // Reset mobile preview mode on large screens
+        if (window.innerWidth > 768 && containerElement.classList.contains('mobile-preview-mode')) {
+          containerElement.classList.remove('mobile-preview-mode');
+        }
+      });
+    }
+    
+    // Setup drag and drop functionality
+    function setupDragAndDrop() {
+      // Prevent default drag behaviors
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        editorContainer.addEventListener(eventName, preventDefaults, false);
+      });
+      
+      // Highlight drop area when item is dragged over it
+      ['dragenter', 'dragover'].forEach(eventName => {
+        editorContainer.addEventListener(eventName, highlight, false);
+      });
+      
+      ['dragleave', 'drop'].forEach(eventName => {
+        editorContainer.addEventListener(eventName, unhighlight, false);
+      });
+      
+      // Handle drop event
+      editorContainer.addEventListener('drop', handleDrop, false);
+      
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      function highlight() {
+        editorContainer.classList.add('drag-over');
+      }
+      
+      function unhighlight() {
+        editorContainer.classList.remove('drag-over');
+      }
+      
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files && files.length) {
+          // Handle multiple files - open each in a new tab
+          Array.from(files).forEach((file, index) => {
+            const fileType = file.type;
+            
+            // Check if file is a markdown, text file or has .md/.markdown extension
+            if (fileType === 'text/markdown' || fileType === 'text/plain' || 
+                file.name.endsWith('.md') || file.name.endsWith('.markdown') || 
+                file.name.endsWith('.txt')) {
+              
+              // Create new tab for each file after the first one
+              if (index > 0) {
+                createNewTab();
+              }
+              
+              const reader = new FileReader();
+              
+              // Display loading state
+              editor.value = "Loading file...";
+              renderMarkdown();
+              
+              reader.onload = (e) => {
+                const fileContent = e.target.result;
+                
+                // Update the active tab
+                const tab = tabs.find(t => t.id === activeTabId);
+                if (tab) {
+                  tab.title = file.name;
+                  tab.content = fileContent;
+                  tab.isModified = false;
+                  tab.filePath = file.name; // Store file name
+                  
+                  // Update tab element title
+                  const tabElement = document.querySelector(`.tab[data-tab-id="${activeTabId}"]`);
+                  if (tabElement) {
+                    tabElement.querySelector('.tab-title').textContent = file.name;
+                    updateTabModifiedState(activeTabId, false);
+                  }
+                }
+                
+                // Update editor
+                editor.value = fileContent;
+                renderMarkdown();
+                
+                // Show notification
+                showNotification(`File "${file.name}" loaded successfully`);
+              };
+              
+              reader.onerror = () => {
+                editor.value = "Error loading file";
+                renderMarkdown();
+                
+                // Show error notification
+                showNotification("Error loading file", true);
+              };
+              
+              reader.readAsText(file);
+            } else {
+              showNotification("Unsupported file type. Please upload .md, .markdown, or .txt files.", true);
+            }
+          });
+        }
+      }
+    }
+
+    // Check selection to show/hide format bar
+    function checkSelection() {
+      if (formatBarDebounceTimer) {
+        clearTimeout(formatBarDebounceTimer);
+      }
+      
+      formatBarDebounceTimer = setTimeout(() => {
+        try {
+          // Show format bar whenever editor has focus
+          if (document.activeElement === editor) {
+            showFormatBar();
+            
+            // Check if we need to scroll content to avoid format bar
+            ensureContentVisibility();
+          } else {
+            hideFormatBar();
+          }
+        } catch (e) {
+          console.error("Error in checkSelection:", e);
+        }
+      }, 50);
+    }
+    
+    // Auto-scroll to keep cursor visible during editing
+    function autoScrollToBottom() {
+      // Get the current cursor position
+      const cursorPosition = editor.selectionEnd;
+      
+      // Check if cursor is at or near the end of content
+      const textAfterCursor = editor.value.length - cursorPosition;
+      
+      // If typing near the end of content (within 500 chars of the end)
+      // or if cursor is after 80% of the total content length
+      if (textAfterCursor < 500 || cursorPosition > editor.value.length * 0.8) {
+        // Scroll to show the cursor position with some additional margin
+        const cursorCoords = getCursorCoordinates(editor, cursorPosition);
+        if (cursorCoords) {
+          editor.scrollTo({
+            top: cursorCoords.top - 200, // Keep cursor in view with 200px margin above it
+            behavior: 'smooth'
+          });
+        }
+      }
+    }
+    
+    // Ensure content is visible and not behind format bar
+    function ensureContentVisibility() {
+      // Get the cursor position
+      const cursorPosition = editor.selectionEnd;
+      const editorRect = editor.getBoundingClientRect();
+      const formatBarRect = formatBar.getBoundingClientRect();
+      
+      // Calculate the visible bottom area (where the format bar might overlap)
+      const visibleBottom = window.innerHeight - formatBarRect.height - 50; // 50px extra margin for safety
+      
+      // Calculate if cursor is near the bottom of the screen
+      const cursorCoords = getCursorCoordinates(editor, cursorPosition);
+      
+      if (cursorCoords && cursorCoords.top > visibleBottom) {
+        // Cursor is in the potential overlap area, scroll the editor
+        const scrollAmount = cursorCoords.top - visibleBottom + 50; // Add more margin
+        editor.scrollBy({
+          top: scrollAmount,
+          behavior: 'smooth'
+        });
+      }
+    }
+    
+    // Show the format bar
+    function showFormatBar() {
+      if (!formatBar || formatBarVisible) return;
+      
+      // Directly apply styles for maximum compatibility
+      formatBar.style.visibility = 'visible';
+      formatBar.style.opacity = '1';
+      formatBar.style.transform = 'translateX(-50%) translateY(0)';
+      formatBar.classList.add('active');
+      formatBarVisible = true;
+      console.log("Format bar shown");
+    }
+    
+    // Hide the format bar
+    function hideFormatBar() {
+      if (!formatBar || !formatBarVisible) return;
+      
+      // Directly apply styles for maximum compatibility
+      formatBar.style.transform = 'translateX(-50%) translateY(100px)';
+      formatBar.style.opacity = '0';
+      
+      // Use setTimeout to maintain transition effect
+      setTimeout(() => {
+        if (!formatBarVisible) {
+          formatBar.style.visibility = 'hidden';
+        }
+      }, 300);
+      
+      formatBar.classList.remove('active');
+      formatBarVisible = false;
+      console.log("Format bar hidden");
+    }
+    
+    // Function to update theme
+    function updateTheme(themeName) {
+      currentTheme = themeName;
+      localStorage.setItem('theme', themeName);
+      
+      // Update highlight.js theme based on dark mode
+      const mode = isDarkMode ? 'dark' : 'light';
+      let hlTheme;
+      
+      // Select appropriate syntax highlighting theme based on current mode
+      if (mode === 'dark') {
+        switch(themeName) {
+          case 'default':
+            hlTheme = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/atom-one-dark.min.css';
+            document.documentElement.style.setProperty('--hljs-color', '#abb2bf');
+            document.documentElement.style.setProperty('--hljs-string', '#98c379');
+            document.documentElement.style.setProperty('--hljs-function', '#61afef');
+            break;
+          case 'github':
+            hlTheme = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github-dark.min.css';
+            document.documentElement.style.setProperty('--hljs-color', '#c9d1d9');
+            document.documentElement.style.setProperty('--hljs-string', '#a5d6ff');
+            document.documentElement.style.setProperty('--hljs-function', '#d2a8ff');
+            break;
+          case 'monokai':
+            hlTheme = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/monokai.min.css';
+            document.documentElement.style.setProperty('--hljs-color', '#f8f8f2');
+            document.documentElement.style.setProperty('--hljs-string', '#e6db74');
+            document.documentElement.style.setProperty('--hljs-function', '#66d9ef');
+            break;
+          case 'dracula':
+            hlTheme = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/dracula.min.css';
+            document.documentElement.style.setProperty('--hljs-color', '#f8f8f2');
+            document.documentElement.style.setProperty('--hljs-string', '#f1fa8c');
+            document.documentElement.style.setProperty('--hljs-function', '#8be9fd');
+            break;
+          case 'nord':
+            hlTheme = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/nord.min.css';
+            document.documentElement.style.setProperty('--hljs-color', '#d8dee9');
+            document.documentElement.style.setProperty('--hljs-string', '#a3be8c');
+            document.documentElement.style.setProperty('--hljs-function', '#88c0d0');
+            break;
+          default:
+            hlTheme = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/atom-one-dark.min.css';
+            document.documentElement.style.setProperty('--hljs-color', '#abb2bf');
+            document.documentElement.style.setProperty('--hljs-string', '#98c379');
+            document.documentElement.style.setProperty('--hljs-function', '#61afef');
+        }
+      } else {
+        switch(themeName) {
+          case 'default':
+            hlTheme = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/atom-one-light.min.css';
+            document.documentElement.style.setProperty('--hljs-color', '#383a42');
+            document.documentElement.style.setProperty('--hljs-string', '#50a14f');
+            document.documentElement.style.setProperty('--hljs-function', '#4078f2');
+            break;
+          case 'github':
+            hlTheme = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css';
+            document.documentElement.style.setProperty('--hljs-color', '#24292e');
+            document.documentElement.style.setProperty('--hljs-string', '#032f62');
+            document.documentElement.style.setProperty('--hljs-function', '#6f42c1');
+            break;
+          case 'monokai':
+            hlTheme = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/monokai-sublime.min.css';
+            document.documentElement.style.setProperty('--hljs-color', '#272822');
+            document.documentElement.style.setProperty('--hljs-string', '#e6db74');
+            document.documentElement.style.setProperty('--hljs-function', '#66d9ef');
+            break;
+          case 'dracula':
+            hlTheme = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/dracula.min.css';
+            document.documentElement.style.setProperty('--hljs-color', '#282a36');
+            document.documentElement.style.setProperty('--hljs-string', '#f1fa8c');
+            document.documentElement.style.setProperty('--hljs-function', '#8be9fd');
+            break;
+          case 'nord':
+            hlTheme = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/nord.min.css';
+            document.documentElement.style.setProperty('--hljs-color', '#2e3440');
+            document.documentElement.style.setProperty('--hljs-string', '#a3be8c');
+            document.documentElement.style.setProperty('--hljs-function', '#88c0d0');
+            break;
+          default:
+            hlTheme = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/atom-one-light.min.css';
+            document.documentElement.style.setProperty('--hljs-color', '#383a42');
+            document.documentElement.style.setProperty('--hljs-string', '#50a14f');
+            document.documentElement.style.setProperty('--hljs-function', '#4078f2');
+        }
+      }
+      
+      // Update highlight.js theme
+      highlightTheme.href = hlTheme;
+      
+      // Update theme variables
+      const themeVars = themes[themeName].variables[mode];
+      
+      Object.keys(themeVars).forEach(key => {
+        document.documentElement.style.setProperty(key, themeVars[key]);
+      });
+      
+      // Re-render markdown to update code highlighting
+      renderMarkdown();
+    }
+
+    // Function to toggle dark mode
+    function updateDarkMode() {
+      if (isDarkMode) {
+        document.body.setAttribute('data-theme', 'dark');
+        darkModeToggle.innerHTML = '☀️ Light Mode';
+      } else {
+        document.body.removeAttribute('data-theme');
+        darkModeToggle.innerHTML = '🌙 Dark Mode';
+      }
+      
+      // Update theme variables based on current theme and mode
+      const mode = isDarkMode ? 'dark' : 'light';
+      const themeVars = themes[currentTheme].variables[mode];
+      
+      Object.keys(themeVars).forEach(key => {
+        document.documentElement.style.setProperty(key, themeVars[key]);
+      });
+      
+      localStorage.setItem('darkMode', isDarkMode);
+      
+      // Re-render markdown to update code highlighting
+      renderMarkdown();
+    }
+
+    // Function to render markdown
+    function renderMarkdown() {
+      // Configure marked options
+      marked.setOptions({
+        breaks: true, // Enable line breaks
+        gfm: true,    // Enable GitHub flavored markdown
+        highlight: function(code, lang) {
+          // Highlight code blocks
+          if (lang && hljs.getLanguage(lang)) {
+            try {
+              return hljs.highlight(code, { language: lang }).value;
+            } catch (err) {}
+          }
+          return hljs.highlightAuto(code).value;
+        }
+      });
+      
+      // Render the markdown
+      const markdownText = editor.value;
+      const htmlOutput = marked.parse(markdownText);
+      preview.innerHTML = htmlOutput;
+      
+      // Apply syntax highlighting to all code blocks
+      document.querySelectorAll('pre code').forEach((block) => {
+        // Get the language from the class name if available
+        const language = block.className.split(' ').find(cl => cl.startsWith('language-'));
+        const languageName = language ? language.replace('language-', '') : 'text';
+        
+        // Add language label to pre element
+        if (block.parentNode && languageName !== 'text') {
+          block.parentNode.setAttribute('data-language', languageName);
+        }
+        
+        // Apply syntax highlighting
+        hljs.highlightElement(block);
+      });
+      
+      // Auto-scroll preview to bottom when content is updated
+      autoScrollPreviewToBottom();
+    }
+    
+    // Auto-scroll preview to bottom function
+    function autoScrollPreviewToBottom() {
+      const previewScrollArea = document.querySelector('.preview-scroll-area');
+      if (previewScrollArea) {
+        // Scroll to the bottom of the preview with smooth animation
+        previewScrollArea.scrollTo({
+          top: previewScrollArea.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }
+
+    // File handling functions
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      
+      if (file) {
+        const fileName = file.name;
+        const reader = new FileReader();
+        
+        // Display loading state
+        editor.value = "Loading file...";
+        renderMarkdown();
+        
+        reader.onload = (e) => {
+          const fileContent = e.target.result;
+          
+          // Update the active tab
+          const tab = tabs.find(t => t.id === activeTabId);
+          if (tab) {
+            tab.title = fileName;
+            tab.content = fileContent;
+            tab.isModified = false;
+            tab.filePath = fileName; // Store file name
+            
+            // Update tab element title
+            const tabElement = document.querySelector(`.tab[data-tab-id="${activeTabId}"]`);
+            if (tabElement) {
+              tabElement.querySelector('.tab-title').textContent = fileName;
+              updateTabModifiedState(activeTabId, false);
+            }
+          }
+          
+          // Update editor
+          editor.value = fileContent;
+          renderMarkdown();
+          
+          // Save to local storage
+          saveTabsToLocalStorage();
+          
+          // Show notification
+          showNotification(`File "${fileName}" loaded successfully`);
+        };
+        
+        reader.onerror = () => {
+          editor.value = "Error loading file";
+          renderMarkdown();
+          
+          // Show error notification
+          showNotification("Error loading file", true);
+        };
+        
+        reader.readAsText(file);
+      }
+    }
+    
+    function handleFileDownload() {
+      // Get content from active tab
+      saveTabContent();
+      const tab = tabs.find(t => t.id === activeTabId);
+      const content = tab.content;
+      
+      // Determine file name from tab
+      let fileName = tab.title || 'markdown_file.md';
+      if (!fileName.endsWith('.md')) {
+        fileName += '.md';
+      }
+      
+      // Create a blob with the content
+      const blob = new Blob([content], { type: 'text/markdown' });
+      
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      
+      // Append to the body, click and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Revoke the object URL to free up memory
+      URL.revokeObjectURL(link.href);
+      
+      // Mark the tab as no longer modified
+      updateTabModifiedState(activeTabId, false);
+      
+      // Save changes to local storage
+      saveTabsToLocalStorage();
+      
+      // Show notification
+      showNotification(`File "${fileName}" saved successfully`);
+    }
+    
+    // Function to insert text at cursor position
+    function insertTextAtCursor(text, selectStartPosition = 0, selectLength = 0) {
+      const startPos = editor.selectionStart;
+      const endPos = editor.selectionEnd;
+      const selectedText = editor.value.substring(startPos, endPos);
+      
+      // Prepare the text to insert
+      let textToInsert = text;
+      
+      // Replace any {{selection}} placeholder with the selected text
+      if (text.includes('{{selection}}')) {
+        textToInsert = text.replace('{{selection}}', selectedText);
+      }
+      
+      // Insert the new text
+      editor.value = editor.value.substring(0, startPos) + 
+                    textToInsert + 
+                    editor.value.substring(endPos);
+      
+      // Set new cursor position or selection
+      if (selectLength > 0) {
+        // Position cursor at specified position and select text
+        const selectionStart = startPos + selectStartPosition;
+        editor.setSelectionRange(selectionStart, selectionStart + selectLength);
+      } else {
+        // Position cursor at the end of inserted text
+        const newPosition = startPos + textToInsert.length;
+        editor.setSelectionRange(newPosition, newPosition);
+      }
+      
+      // Focus the editor
+      editor.focus();
+      
+      // Update preview and mark tab as modified
+      renderMarkdown();
+      updateTabModifiedState(activeTabId, true);
+    }
+    
+    // Function to handle element insertion
+    function insertElement(elementType) {
+      switch (elementType) {
+        case 'heading1':
+          insertTextAtCursor('# Heading 1\n', 2, 9);
+          break;
+        case 'heading2':
+          insertTextAtCursor('## Heading 2\n', 3, 9);
+          break;
+        case 'heading3':
+          insertTextAtCursor('### Heading 3\n', 4, 9);
+          break;
+        case 'heading4':
+          insertTextAtCursor('#### Heading 4\n', 5, 9);
+          break;
+        case 'heading5':
+          insertTextAtCursor('##### Heading 5\n', 6, 9);
+          break;
+        case 'heading6':
+          insertTextAtCursor('###### Heading 6\n', 7, 9);
+          break;
+        case 'bold':
+          if (editor.selectionStart !== editor.selectionEnd) {
+            // If text is selected, wrap it in bold syntax
+            insertTextAtCursor('**{{selection}}**');
+          } else {
+            // If no text is selected, insert placeholder
+            insertTextAtCursor('**bold text**', 2, 9);
+          }
+          break;
+        case 'italic':
+          if (editor.selectionStart !== editor.selectionEnd) {
+            insertTextAtCursor('*{{selection}}*');
+          } else {
+            insertTextAtCursor('*italic text*', 1, 11);
+          }
+          break;
+        case 'strikethrough':
+          if (editor.selectionStart !== editor.selectionEnd) {
+            insertTextAtCursor('~~{{selection}}~~');
+          } else {
+            insertTextAtCursor('~~strikethrough text~~', 2, 18);
+          }
+          break;
+        case 'highlight':
+          if (editor.selectionStart !== editor.selectionEnd) {
+            insertTextAtCursor('=={{selection}}==');
+          } else {
+            insertTextAtCursor('==highlighted text==', 2, 16);
+          }
+          break;
+        case 'blockquote':
+          insertTextAtCursor('> Blockquote text\n', 2, 14);
+          break;
+        case 'code':
+          insertTextAtCursor('```\ncode block\n```\n', 4, 10);
+          break;
+        case 'inlinecode':
+          if (editor.selectionStart !== editor.selectionEnd) {
+            insertTextAtCursor('`{{selection}}`');
+          } else {
+            insertTextAtCursor('`inline code`', 1, 11);
+          }
+          break;
+        case 'tasklist':
+          insertTextAtCursor('- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3\n', 6, 6);
+          break;
+        case 'numberedlist':
+          insertTextAtCursor('1. First item\n2. Second item\n3. Third item\n', 3, 10);
+          break;
+        case 'bulletlist':
+          insertTextAtCursor('- First item\n- Second item\n- Third item\n', 2, 10);
+          break;
+        case 'definition':
+          insertTextAtCursor('Term 1\n: Definition 1\n\nTerm 2\n: Definition 2\n', 0, 6);
+          break;
+        case 'link':
+          insertTextAtCursor('[link text](https://example.com)', 1, 9);
+          break;
+        case 'image':
+          insertTextAtCursor('![alt text](image-url.jpg \"Image title\")', 2, 8);
+          break;
+        case 'table':
+          insertTextAtCursor('| Header 1 | Header 2 | Header 3 |\n|----------|----------|----------|\n| Row 1-1  | Row 1-2  | Row 1-3  |\n| Row 2-1  | Row 2-2  | Row 2-3  |\n', 2, 8);
+          break;
+        case 'footnote':
+          insertTextAtCursor('Here is a sentence with a footnote[^1].\n\n[^1]: This is the footnote content.\n', 31, 3);
+          break;
+        case 'horizontalrule':
+          insertTextAtCursor('\n---\n\n');
+          break;
+        case 'comment':
+          insertTextAtCursor('<!-- Comment text -->', 5, 12);
+          break;
+        case 'codeblock-js':
+          insertTextAtCursor('```javascript\n// JavaScript code\nconst greeting = \"Hello, world!\";\nconsole.log(greeting);\n```\n', 15, 16);
+          break;
+        case 'codeblock-html':
+          insertTextAtCursor('```html\n<!-- HTML code -->\n<div class=\"container\">\n  <h1>Hello, world!</h1>\n</div>\n```\n', 13, 14);
+          break;
+        case 'codeblock-css':
+          insertTextAtCursor('```css\n/* CSS code */\n.container {\n  display: flex;\n  margin: 0 auto;\n}\n```\n', 11, 12);
+          break;
+        case 'codeblock-python':
+          insertTextAtCursor('```python\n# Python code\ndef greet(name):\n    return f\"Hello, {name}!\"\n\nprint(greet(\"World\"))\n```\n', 13, 13);
+          break;
+        case 'codeblock-bash':
+          insertTextAtCursor('```bash\n# Bash/Shell code\necho \"Hello, world!\"\nls -la\n```\n', 12, 14);
+          break;
+        default:
+          console.log('Unknown element type:', elementType);
+      }
+      
+      // Close the dropdown after insertion
+      addElementDropdown.classList.remove('show');
+    }
+    
+    // Notification function
+    function showNotification(message, isError = false) {
+      // Check if a notification already exists and remove it
+      const existingNotification = document.querySelector('.notification');
+      if (existingNotification) {
+        document.body.removeChild(existingNotification);
+      }
+      
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = isError ? 'notification error' : 'notification';
+      notification.textContent = message;
+      
+      // Append to body
+      document.body.appendChild(notification);
+      
+      // Add show class to trigger animation
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 10);
+      
+      // Remove after a delay
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          if (notification.parentNode === document.body) {
+            document.body.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
+    
+    // Tab system setup
+    function setupTabSystem() {
+      // New tab button
+      newTabButton.addEventListener('click', createNewTab);
+      
+      // Setup initial tab
+      const initialTab = document.querySelector('.tab');
+      initialTab.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tab-close')) {
+          closeTab('tab-1');
+        } else {
+          switchTab('tab-1');
+        }
+      });
+    }
+    
+    // Create a new tab
+    function createNewTab() {
+      tabCounter++;
+      const tabId = `tab-${tabCounter}`;
+      
+      // Create tab object
+      tabs.push({
+        id: tabId,
+        title: `untitled-${tabCounter}.md`,
+        content: '',
+        isModified: false,
+        filePath: null
+      });
+      
+      // Create tab element
+      const tabElement = document.createElement('div');
+      tabElement.className = 'tab';
+      tabElement.setAttribute('data-tab-id', tabId);
+      tabElement.innerHTML = `
+        <span class="tab-title">untitled-${tabCounter}.md</span>
+        <span class="tab-modified" style="display: none;">●</span>
+        <span class="tab-close">×</span>
+      `;
+      
+      // Add event listeners
+      tabElement.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tab-close')) {
+          closeTab(tabId);
+        } else {
+          switchTab(tabId);
+        }
+      });
+      
+      // Insert before the new tab button
+      tabsContainer.insertBefore(tabElement, newTabButton);
+      
+      // Switch to the new tab
+      switchTab(tabId);
+      
+      // Update local storage
+      localStorage.setItem(STORAGE_KEY_TAB_COUNTER, tabCounter.toString());
+      saveTabsToLocalStorage();
+    }
+    
+    // Switch to a tab
+    function switchTab(tabId) {
+      // Save current tab content
+      saveTabContent();
+      
+      // Set active tab
+      activeTabId = tabId;
+      
+      // Update UI
+      document.querySelectorAll('.tab').forEach(tab => {
+        if (tab.getAttribute('data-tab-id') === tabId) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+      
+      // Load tab content
+      const tab = tabs.find(t => t.id === tabId);
+      if (tab) {
+        editor.value = tab.content;
+        renderMarkdown();
+        
+        // Update tab modified indicator
+        updateTabModifiedState(tab.id, tab.isModified);
+        
+        // Save active tab to local storage
+        localStorage.setItem(STORAGE_KEY_ACTIVE_TAB, activeTabId);
+      }
+    }
+    
+    // Close a tab
+    function closeTab(tabId) {
+      // Check if it's the last tab
+      if (tabs.length === 1) {
+        // Don't close the last tab, reset it instead
+        const tab = tabs[0];
+        tab.title = 'untitled.md';
+        tab.content = '';
+        tab.isModified = false;
+        tab.filePath = null;
+        
+        // Update UI
+        const tabElement = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+        tabElement.querySelector('.tab-title').textContent = 'untitled.md';
+        updateTabModifiedState(tabId, false);
+        
+        editor.value = '';
+        renderMarkdown();
+        
+        // Save changes to local storage
+        saveTabsToLocalStorage();
+        return;
+      }
+      
+      // Find the tab index
+      const tabIndex = tabs.findIndex(t => t.id === tabId);
+      
+      // Determine which tab to activate next
+      let nextTabId;
+      if (tabId === activeTabId) {
+        // If closing active tab, switch to the tab to the left or right
+        if (tabIndex > 0) {
+          nextTabId = tabs[tabIndex - 1].id; // Switch to previous tab
+        } else {
+          nextTabId = tabs[tabIndex + 1].id; // Switch to next tab
+        }
+      }
+      
+      // Remove tab from array
+      tabs = tabs.filter(t => t.id !== tabId);
+      
+      // Remove tab element
+      const tabElement = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+      if (tabElement) {
+        tabElement.remove();
+      }
+      
+      // Switch to next tab if needed
+      if (nextTabId) {
+        switchTab(nextTabId);
+      }
+      
+      // Save changes to local storage
+      saveTabsToLocalStorage();
+    }
+    
+    // Save current tab content
+    function saveTabContent() {
+      const tab = tabs.find(t => t.id === activeTabId);
+      if (tab) {
+        tab.content = editor.value;
+      }
+    }
+    
+    // Save all tabs to local storage
+    function saveTabsToLocalStorage() {
+      try {
+        // Check available storage space
+        const storageEstimate = estimateStorageUsage();
+        
+        // If storage is getting full, show a warning
+        if (storageEstimate > 0.8) { // 80% full
+          console.warn('Local storage is getting full');
+          // Show notification only if we haven't shown it recently
+          const lastWarningTime = localStorage.getItem('storage_warning_time');
+          const currentTime = Date.now();
+          if (!lastWarningTime || (currentTime - parseInt(lastWarningTime, 10)) > 300000) { // 5 minutes
+            showNotification('Warning: Local storage is getting full. Consider downloading your work.', true);
+            localStorage.setItem('storage_warning_time', currentTime.toString());
+          }
+        }
+        
+        // Save tabs data
+        localStorage.setItem(STORAGE_KEY_TABS, JSON.stringify(tabs));
+        // Save active tab ID
+        localStorage.setItem(STORAGE_KEY_ACTIVE_TAB, activeTabId);
+        // Save tab counter for new tabs
+        localStorage.setItem(STORAGE_KEY_TAB_COUNTER, tabCounter.toString());
+      } catch (error) {
+        console.error('Error saving tabs to local storage:', error);
+        showNotification('Failed to save your work to local storage', true);
+        
+        // If error is QuotaExceededError, try to help user
+        if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+          showNotification('Local storage is full. Please download your work to avoid data loss.', true);
+        }
+      }
+    }
+    
+    // Estimate storage usage (0-1 range)
+    function estimateStorageUsage() {
+      try {
+        let totalSize = 0;
+        for (const key in localStorage) {
+          if (localStorage.hasOwnProperty(key)) {
+            totalSize += localStorage[key].length;
+          }
+        }
+        
+        // Estimate local storage size (usually 5MB)
+        const maxSize = 5 * 1024 * 1024;
+        return totalSize / maxSize;
+      } catch (error) {
+        console.error('Error estimating storage usage:', error);
+        return 0;
+      }
+    }
+    
+    // Load saved tabs from local storage
+    function loadSavedTabs() {
+      try {
+        // Load saved tabs
+        const savedTabs = localStorage.getItem(STORAGE_KEY_TABS);
+        if (savedTabs) {
+          tabs = JSON.parse(savedTabs);
+          
+          // Validate loaded tabs data
+          if (!Array.isArray(tabs) || tabs.length === 0) {
+            throw new Error('Invalid tabs data in local storage');
+          }
+          
+          // Make sure all required properties exist in each tab
+          tabs = tabs.map(tab => {
+            return {
+              id: tab.id || `tab-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+              title: tab.title || 'untitled.md',
+              content: tab.content || '',
+              isModified: tab.isModified || false,
+              filePath: tab.filePath || null
+            };
+          });
+          
+          // Load active tab
+          const savedActiveTabId = localStorage.getItem(STORAGE_KEY_ACTIVE_TAB);
+          if (savedActiveTabId && tabs.some(tab => tab.id === savedActiveTabId)) {
+            activeTabId = savedActiveTabId;
+          } else {
+            // If saved active tab doesn't exist, use the first tab
+            activeTabId = tabs[0].id;
+          }
+          
+          // Load tab counter
+          const savedTabCounter = localStorage.getItem(STORAGE_KEY_TAB_COUNTER);
+          if (savedTabCounter) {
+            tabCounter = parseInt(savedTabCounter, 10);
+            
+            // Make sure tabCounter is at least equal to the highest tab number
+            tabs.forEach(tab => {
+              const match = tab.id.match(/^tab-(\\d+)$/);
+              if (match) {
+                const num = parseInt(match[1], 10);
+                if (num > tabCounter) {
+                  tabCounter = num;
+                }
+              }
+            });
+          }
+          
+          // Create tab elements in the UI for each saved tab
+          createTabElements();
+          
+          // Show notification
+          showNotification('Your previous work has been restored');
+        } else {
+          // Initialize with default tab if no saved tabs
+          tabs.push({
+            id: 'tab-1',
+            title: 'untitled.md',
+            content: defaultMarkdown,
+            isModified: false,
+            filePath: null
+          });
+        }
+      } catch (error) {
+        console.error('Error loading tabs from local storage:', error);
+        showNotification('Failed to load your previous work from local storage', true);
+        
+        // Initialize with default tab if error
+        tabs = [{
+          id: 'tab-1',
+          title: 'untitled.md',
+          content: defaultMarkdown,
+          isModified: false,
+          filePath: null
+        }];
+      }
+    }
+    
+    // Create tab elements in the UI based on loaded tabs
+    function createTabElements() {
+      // Clear existing tabs except the new tab button
+      const existingTabs = tabsContainer.querySelectorAll('.tab');
+      existingTabs.forEach(tab => tab.remove());
+      
+      // Create tab elements for each tab
+      tabs.forEach(tab => {
+        const tabElement = document.createElement('div');
+        tabElement.className = 'tab';
+        if (tab.id === activeTabId) {
+          tabElement.classList.add('active');
+        }
+        tabElement.setAttribute('data-tab-id', tab.id);
+        tabElement.innerHTML = `
+          <span class="tab-title">${escapeHtml(tab.title)}</span>
+          <span class="tab-modified" style="display: ${tab.isModified ? 'inline' : 'none'};">●</span>
+          <span class="tab-close">×</span>
+        `;
+        
+        // Add event listeners
+        tabElement.addEventListener('click', (e) => {
+          if (e.target.classList.contains('tab-close')) {
+            closeTab(tab.id);
+          } else {
+            switchTab(tab.id);
+          }
+        });
+        
+        // Insert before the new tab button
+        tabsContainer.insertBefore(tabElement, newTabButton);
+      });
+    }
+    
+    // Helper function to escape HTML for security
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+    
+    // Update tab modified state
+    function updateTabModifiedState(tabId, isModified) {
+      const tab = tabs.find(t => t.id === tabId);
+      if (tab) {
+        tab.isModified = isModified;
+        
+        // Update UI
+        const tabElement = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+        if (tabElement) {
+          const modifiedIndicator = tabElement.querySelector('.tab-modified');
+          if (isModified) {
+            modifiedIndicator.style.display = 'inline';
+          } else {
+            modifiedIndicator.style.display = 'none';
+          }
+        }
+      }
+    }
+    
+    // Keyboard navigation for Add Element dropdown
+    function handleDropdownKeyboard(event) {
+      if (!addElementDropdown.classList.contains('show')) {
+        return;
+      }
+      
+      const items = Array.from(addElementDropdown.querySelectorAll('a'));
+      const activeIndex = parseInt(addElementDropdown.getAttribute('data-active-index') || '0');
+      let newIndex = activeIndex;
+      
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault();
+          newIndex = (activeIndex + 1) % items.length;
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          newIndex = (activeIndex - 1 + items.length) % items.length;
+          break;
+        case 'Enter':
+          event.preventDefault();
+          if (items[activeIndex]) {
+            items[activeIndex].click();
+          }
+          return;
+        case 'Escape':
+          event.preventDefault();
+          addElementDropdown.classList.remove('show');
+          addElementButton.focus();
+          return;
+        case 'Tab':
+          addElementDropdown.classList.remove('show');
+          return;
+        default:
+          // Filter by first letter
+          const key = event.key.toLowerCase();
+          if (/^[a-z]$/.test(key)) {
+            // Find the first item that starts with the pressed key
+            const matchIndex = items.findIndex(item => 
+              item.textContent.trim().toLowerCase().startsWith(key)
+            );
+            if (matchIndex !== -1) {
+              newIndex = matchIndex;
+            }
+          }
+          break;
+      }
+      
+      // Update active item
+      if (newIndex !== activeIndex) {
+        items.forEach(item => item.classList.remove('keyboard-active'));
+        items[newIndex].classList.add('keyboard-active');
+        addElementDropdown.setAttribute('data-active-index', newIndex);
+        
+        // Scroll into view if needed
+        items[newIndex].scrollIntoView({ block: 'nearest' });
+      }
+    }
+    
+    // Handle keyboard shortcuts for tab navigation and other features
+    function handleTabKeyboardShortcuts(e) {
+      // Escape key to hide floating bar if visible
+      if (e.key === 'Escape' && formatBarVisible) {
+        e.preventDefault();
+        hideFormatBar();
+        return;
+      }
+      
+      // Ctrl+Tab or Ctrl+Shift+Tab for tab switching
+      if (e.ctrlKey && e.key === 'Tab') {
+        e.preventDefault();
+        
+        const tabIndex = tabs.findIndex(t => t.id === activeTabId);
+        let nextIndex;
+        
+        if (e.shiftKey) {
+          // Ctrl+Shift+Tab - Previous tab
+          nextIndex = tabIndex > 0 ? tabIndex - 1 : tabs.length - 1;
+        } else {
+          // Ctrl+Tab - Next tab
+          nextIndex = tabIndex < tabs.length - 1 ? tabIndex + 1 : 0;
+        }
+        
+        switchTab(tabs[nextIndex].id);
+      }
+      
+      // Ctrl+T for new tab
+      if (e.ctrlKey && e.key === 't') {
+        e.preventDefault();
+        createNewTab();
+      }
+      
+      // Ctrl+W for close tab
+      if (e.ctrlKey && e.key === 'w') {
+        e.preventDefault();
+        closeTab(activeTabId);
+      }
+      
+      // '/' key shortcut to open Add Element dropdown when in editor
+      if (e.target === editor && e.key === '/' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        // Only trigger if slash is at the start of a line or follows a newline
+        const cursorPos = editor.selectionStart;
+        const textBeforeCursor = editor.value.substring(0, cursorPos);
+        const lastChar = textBeforeCursor.charAt(textBeforeCursor.length - 1);
+        
+        if (cursorPos === 0 || lastChar === '\n' || lastChar === '\\r') {
+          e.preventDefault();
+          
+          // Remove the '/' character that was just typed
+          editor.value = textBeforeCursor.substring(0, textBeforeCursor.length) + editor.value.substring(cursorPos);
+          editor.selectionStart = editor.selectionEnd = cursorPos;
+          
+          // Position dropdown near cursor
+          positionDropdownAtCursor();
+          
+          // Show the dropdown
+          addElementDropdown.classList.add('show');
+          
+          // Focus first item
+          setTimeout(() => {
+            const firstItem = addElementDropdown.querySelector('a');
+            if (firstItem) {
+              firstItem.classList.add('keyboard-active');
+              addElementDropdown.setAttribute('data-active-index', '0');
+            }
+          }, 10);
+        }
+      }
+    }
+    
+    // Position dropdown near cursor position
+    function positionDropdownAtCursor() {
+      // Get cursor position
+      const cursorPos = editor.selectionStart;
+      const cursorCoords = getCursorCoordinates(editor, cursorPos);
+      
+      // Position dropdown
+      if (cursorCoords) {
+        const editorRect = editor.getBoundingClientRect();
+        const containerRect = document.querySelector('.container').getBoundingClientRect();
+        
+        const dropdownTop = cursorCoords.top + 20 - containerRect.top;
+        const dropdownLeft = cursorCoords.left - containerRect.left;
+        
+        // Check if we should position above or below cursor
+        const windowHeight = window.innerHeight;
+        const dropdownHeight = Math.min(320, addElementLinks.length * 36); // Approx height
+        
+        // Mobile adjustment
+        if (window.innerWidth <= 768) {
+          // For mobile, center the dropdown
+          addElementDropdown.style.position = 'fixed';
+          addElementDropdown.style.top = `${Math.min(dropdownTop + window.scrollY, windowHeight - dropdownHeight - 20)}px`;
+          addElementDropdown.style.left = '50%';
+          addElementDropdown.style.transform = 'translateX(-50%)';
+        } else {
+          // For desktop, position near cursor
+          addElementDropdown.style.position = 'absolute';
+          addElementDropdown.style.top = `${dropdownTop}px`;
+          addElementDropdown.style.left = `${dropdownLeft}px`;
+          addElementDropdown.style.transform = '';
+          
+          // Ensure dropdown doesn't go off screen horizontally
+          const dropdownRight = dropdownLeft + 160; // Approx width
+          if (dropdownRight > editorRect.width) {
+            addElementDropdown.style.left = `${editorRect.width - 165}px`;
+          }
+        }
+      }
+    }
+    
+    // Setup the format bar
+    function setupFormatBar() {
+      // Get the format bar element
+      formatBar = document.getElementById('format-bar');
+      
+      if (!formatBar) {
+        console.error("Format bar not found in the DOM");
+        return;
+      }
+      
+      // Ensure initial state is hidden
+      formatBar.style.opacity = '0';
+      formatBar.style.visibility = 'hidden';
+      formatBar.style.transform = 'translateX(-50%) translateY(100px)';
+      
+      // Add click event listeners to all format bar buttons
+      const formatButtons = formatBar.querySelectorAll('button');
+      formatButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+          const elementType = button.getAttribute('data-element');
+          if (elementType) {
+            e.preventDefault();
+            insertElement(elementType);
+            editor.focus();
+            
+            // Check selection state after insertion
+            setTimeout(() => {
+              checkSelection();
+            }, 50);
+          }
+        });
+      });
+      
+      // Selection events with direct mouse/touch interactions
+      editor.addEventListener('mouseup', () => {
+        setTimeout(checkSelection, 10);
+      });
+      editor.addEventListener('touchend', () => {
+        setTimeout(checkSelection, 10);
+      });
+      
+      // Selection events with keyboard
+      editor.addEventListener('keyup', function(e) {
+        if (e.key === 'Shift' || e.key.includes('Arrow') || 
+            e.key === 'End' || e.key === 'Home' ||
+            e.ctrlKey || e.metaKey) {
+          setTimeout(checkSelection, 10);
+        }
+      });
+      
+      // Use selectionchange event for better detection
+      document.addEventListener('selectionchange', () => {
+        if (document.activeElement === editor) {
+          setTimeout(checkSelection, 10);
+        }
+      });
+      
+      // Handle scrolling
+      editor.addEventListener('scroll', function() {
+        if (formatBarVisible) {
+          // Update format bar state on scroll
+          checkSelection();
+        }
+      });
+      
+      // Hide when clicking outside
+      document.addEventListener('mousedown', (event) => {
+        if (event.target !== editor && !formatBar.contains(event.target)) {
+          hideFormatBar();
+        }
+      });
+      
+      // Initialize bar to hidden state
+      formatBarVisible = false;
+      
+      // Show format bar immediately when setup is complete
+      showFormatBar();
+      
+      console.log("Format bar setup completed");
+    }
+    
+    // Helper function to get cursor coordinates
+    function getCursorCoordinates(textarea, position) {
+      // Create a mirror div to find cursor position
+      const mirror = document.createElement('div');
+      mirror.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        visibility: hidden;
+        height: auto;
+        width: ${textarea.clientWidth}px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: ${getComputedStyle(textarea).fontFamily};
+        font-size: ${getComputedStyle(textarea).fontSize};
+        line-height: ${getComputedStyle(textarea).lineHeight};
+        padding: ${getComputedStyle(textarea).padding};
+      `;
+      
+      // Get text up to cursor
+      const text = textarea.value.substring(0, position);
+      mirror.textContent = text;
+      
+      // Create a span to mark cursor position
+      const span = document.createElement('span');
+      span.textContent = 'I'; // Use any character as a marker
+      
+      // Append to mirror and to document
+      mirror.appendChild(span);
+      document.body.appendChild(mirror);
+      
+      // Get position
+      const coordinates = {
+        top: span.offsetTop + textarea.offsetTop,
+        left: span.offsetLeft + textarea.offsetLeft
+      };
+      
+      // Remove the mirror
+      document.body.removeChild(mirror);
+      
+      return coordinates;
+    }
+  </script>
+</body>
+</html>
