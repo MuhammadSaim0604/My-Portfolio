@@ -20,13 +20,13 @@ const Footer = () => {
               <a href="https://github.com/MuhammadSaim0604" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors" aria-label="GitHub">
                 <Github size={20} />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors" aria-label="LinkedIn">
+              <a href="https://www.linkedin.com/in/muhammad-saim-009354377" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors" aria-label="LinkedIn">
                 <Linkedin size={20} />
               </a>
-              <a href="https://facebook.com/Alirizwan3418" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors" aria-label="Facebook">
+              <a href="https://www.facebook.com/legendsaim786" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors" aria-label="Facebook">
                 <Facebook size={20} />
               </a>
-              <a href="https://instagram.com/Alirizwan3418" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors" aria-label="Instagram">
+              <a href="https://www.instagram.com/legendsaim786/" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors" aria-label="Instagram">
                 <Instagram size={20} />
               </a>
             </div>
