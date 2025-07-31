@@ -244,7 +244,7 @@ const ServicesPage = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="section">
+{/*       <section className="section">
         <div className="container mx-auto px-4">
           <SectionHeading 
             subtitle="PRICING"
@@ -410,7 +410,7 @@ const ServicesPage = () => {
             </Link>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* FAQs Section */}
       <section className="section bg-gray-50">
