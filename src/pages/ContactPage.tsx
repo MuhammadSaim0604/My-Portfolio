@@ -304,7 +304,7 @@ const ContactPage = () => {
                 <h3 className="text-lg font-semibold mb-4">Connect With Me</h3>
                 <div className="flex space-x-4">
                   <a 
-                    href={Info.github || ""} 
+                    href="https://github.com/MuhammadSaim0604"
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-3 rounded-full transition-colors"
@@ -315,7 +315,7 @@ const ContactPage = () => {
                     </svg>
                   </a>
                   <a 
-                    href={Info.linkedin || ""} 
+                    href="https://www.linkedin.com/in/muhammad-saim-009354377"
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-3 rounded-full transition-colors"
@@ -328,7 +328,7 @@ const ContactPage = () => {
                     </svg>
                   </a>
                   <a 
-                    href="https://facebook.com/Alirizwan3418" 
+                    href="https://www.facebook.com/legendsaim786" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-3 rounded-full transition-colors"
@@ -339,7 +339,7 @@ const ContactPage = () => {
                     </svg>
                   </a>
                   <a 
-                    href="https://instagram.com/Alirizwan3418" 
+                    href="https://www.instagram.com/legendsaim786/" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-3 rounded-full transition-colors"
