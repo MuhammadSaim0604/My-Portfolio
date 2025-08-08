@@ -174,7 +174,7 @@ const Header = ({ isScrolled }: HeaderProps) => {
             >
               Portfolio
             </NavLink>
-            <NavLink 
+            {/*<NavLink 
               to="/testimonials" 
               className={({ isActive }) => 
                 `font-medium text-lg ${
@@ -199,7 +199,7 @@ const Header = ({ isScrolled }: HeaderProps) => {
               onClick={toggleMenu}
             >
               Blog
-            </NavLink>
+            </NavLink> */}
             <NavLink 
               to="/contact" 
               className="btn-primary w-full text-center"

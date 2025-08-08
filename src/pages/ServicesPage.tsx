@@ -244,7 +244,7 @@ const ServicesPage = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="section">
+     {/* <section className="section">
         <div className="container mx-auto px-4">
           <SectionHeading 
             subtitle="PRICING"
@@ -253,7 +253,8 @@ const ServicesPage = () => {
           />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Basic Plan */}
+
+
             <div className="card p-8 border border-gray-200 flex flex-col h-full">
               <div className="mb-6">
                 <h3 className="text-xl font-bold mb-2">Basic Website</h3>
@@ -298,7 +299,8 @@ const ServicesPage = () => {
               </Link>
             </div>
 
-            {/* Standard Plan */}
+
+
             <div className="card p-8 border-2 border-primary-500 relative flex flex-col h-full shadow-lg">
               <div className="absolute top-0 right-0 bg-primary-500 text-white px-4 py-1 text-sm font-medium transform translate-y-0 translate-x-0">
                 POPULAR
@@ -351,7 +353,8 @@ const ServicesPage = () => {
               </Link>
             </div>
 
-            {/* Premium Plan */}
+
+
             <div className="card p-8 border border-gray-200 flex flex-col h-full">
               <div className="mb-6">
                 <h3 className="text-xl font-bold mb-2">E-commerce / Custom</h3>
@@ -410,7 +413,7 @@ const ServicesPage = () => {
             </Link>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* FAQs Section */}
       <section className="section bg-gray-50">
