@@ -1,7 +1,6 @@
 import { ArrowRight, Code, Layout, Palette, Zap, Star, CheckCircle, CloudCog } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SectionHeading from '../components/shared/SectionHeading';
-import About from '../components/shared/about';
 import { useEffect, useRef, useState } from 'react';
 import gsap from "gsap";
 import { useGSAP } from '@gsap/react';
@@ -91,6 +90,9 @@ const HomePage = () => {
   }, [baseUrl]);
 
   useGSAP(() => {
+    // ScrollTrigger.getAll().forEach(trigger => trigger.kill()); // clean old
+    // gsap.killTweensOf("*"); // clean tweens
+
     const tl = gsap.timeline({
       defaults: { opacity: 0, ease: 'power3.out' },
     });
@@ -175,38 +177,54 @@ const HomePage = () => {
         });
       }
     });
-  }, { scope: containerRef });
+    const onLoad = () => {
+      ScrollTrigger.refresh();
+    };
+    window.addEventListener("load", onLoad);
+    return () => window.removeEventListener("load", onLoad);
+  }, { scope: containerRef, dependencies: [location.pathname] });
 
   return (
     <div ref={containerRef}>
       {/* Hero Section */}
       <section className="pt-32 pb-20 bg-gradient-to-r from-primary-50 to-secondary-50">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row items-center">
-            <div className="flex flex-col lg:flex-row items-center">
+          {/* <div className="flex flex-col lg:flex-row items-center"> */}
+            <div className="flex flex-col lg:flex-row items-center lg:pl-36">
               {/* Mobile: coding image as first child */}
               {isMobile && (
-                <div className="mb-10 lg:mb-0 w-full">
-                  <img
-                    // src="/profileimage.png"
-                    src='/profileimage2.png'
-                    alt="Professional Web Developer"
-                    ref={codingImage}
-                    className="rounded-lg mx-auto bg-transparent"
-                    height={250}
-                    width={300}
-                  />
+                <div className="w-full lg:w-1/2 flex justify-center">
+                  <div className="relative max-w-md">
+                    {/* Gradient background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full opacity-20 blur-xl -z-10 transform scale-110"></div>
+                    {/* Profile image */}
+                    <img
+                      src="/profileimage2.png"
+                      alt="Professional Web Developer"
+                      className="rounded-full object-cover md:w-80 md:h-80 lg:w-96 lg:h-96 border-4 border-white shadow-lg mx-auto"
+                      height={220}
+                      width={230}
+                    />
+                  </div>
                 </div>
+
               )}
 
               <div className="lg:w-1/2 mb-10 lg:mb-0">
-                <h1 className="hero-title text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-gray-900">
+                {/* <h1 className="hero-title text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-gray-900">
                   Crafting Seamless <span className="text-primary-600">Animated Web Application</span> Experiences
-                </h1>
-                <p className="hero-subtitle text-xl text-gray-700 mb-8 max-w-xl">
+                </h1> */}
+                <SectionHeading
+                  subtitle=""
+                  title="Hi, I'm Muhammad Saim"
+                  description="Full stack Developer and Wordpress designer with a passion for creating beautiful, functional websites."
+                  alignment="left"
+                  career="Software Engineer"
+                />
+                {/* <p className="hero-subtitle text-xl text-gray-700 mb-8 max-w-xl">
                   Delivering modern, fast, and user-focused websites that convert visitors into customers.
                   Expert in Mern Stack Development, WordPress development and front-end technologies.
-                </p>
+                </p> */}
                 <div className="hero-buttons flex flex-col sm:flex-row gap-4">
                   <Link
                     to="/MyResume.pdf"
@@ -251,19 +269,22 @@ const HomePage = () => {
 
               {/* Desktop: coding image as second child */}
               {!isMobile && (
-                <div className="lg:w-1/2 hero-image">
-                  <img
-                    src='/profileimage2.png'
-                    alt="Professional Web Developer"
-                    ref={codingImage}
-                    className="rounded-lg"
-                    height={500}
-                    width={500}
-                  />
+                <div className="w-full lg:w-1/3 flex justify-center pl-36">
+                  <div className="relative max-w-md">
+                    {/* Gradient background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full opacity-20 blur-xl -z-10 transform scale-110"></div>
+                    {/* Profile image */}
+                    <img
+                      src="/profileimage2.png"
+                      alt="Professional Web Developer"
+                      className="rounded-full object-cover w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 border-4 border-white shadow-lg mx-auto"
+                    />
+                  </div>
                 </div>
+
               )}
             </div>
-          </div>
+          {/* </div> */}
         </div>
       </section>
 
@@ -276,7 +297,7 @@ const HomePage = () => {
             description="I specialize in Mern Stack Development, WordPress development and front-end technologies that help businesses grow and succeed online."
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mx-auto lg:p-12">
             {services.map((service, idx) => {
               const Icon = iconMap[service.icon] || Code;
               return (
@@ -328,7 +349,7 @@ const HomePage = () => {
             description="Take a look at some of my recent WordPress and front-end development projects."
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:p-12">
             {mainProjects.map((project, idx) => (
               <div
                 key={project.id}
