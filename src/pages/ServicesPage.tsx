@@ -4,18 +4,28 @@ import { Layout, Code, Palette, ShoppingCart, Globe, Cpu, HardDrive } from 'luci
 import { Link } from 'react-router-dom';
 import SectionHeading from '../components/shared/SectionHeading';
 
-const ServiceCard = ({ 
-  icon: Icon, 
-  title, 
-  description, 
-  features, 
-  color = "primary" 
-}: { 
-  icon: React.ElementType; 
-  title: string; 
-  description: string; 
+import { useRef } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+// Register GSAP plugins
+gsap.registerPlugin(useGSAP, ScrollTrigger);
+
+const ServiceCard = ({
+  icon: Icon,
+  title,
+  description,
+  features,
+  color = "primary",
+
+}: {
+  icon: React.ElementType;
+  title: string;
+  description: string;
   features: string[];
   color?: "primary" | "secondary" | "accent";
+
 }) => {
   const colorClasses = {
     primary: {
@@ -53,8 +63,8 @@ const ServiceCard = ({
           </li>
         ))}
       </ul>
-      <Link 
-        to="/contact" 
+      <Link
+        to="/contact"
         className={`btn ${colorClasses[color].btn} text-white mt-auto`}
       >
         Inquire Now
@@ -76,6 +86,16 @@ const iconMap: Record<string, React.ElementType> = {
 const ServicesPage = () => {
   const [services, setServices] = useState<any[]>([]);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const heroTitleRef = useRef<HTMLHeadingElement>(null);
+  const heroTextRef = useRef<HTMLParagraphElement>(null);
+  const servicesRef = useRef<HTMLDivElement>(null);
+  const processRef = useRef<HTMLDivElement>(null);
+  const faqRef = useRef<HTMLDivElement>(null);
+  const serviceCardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const processStepsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const faqItemsRef = useRef<(HTMLDivElement | null)[]>([]);
+
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
@@ -84,167 +104,271 @@ const ServicesPage = () => {
       .catch(err => console.error("Error fetching services:", err));
   }, []);
 
+  useGSAP(() => {
+    // Hero section animations
+    gsap.from(heroTitleRef.current, {
+      y: 50,
+      duration: 0.8,
+      ease: 'power2.out'
+    });
+
+    gsap.from(heroTextRef.current, {
+      y: 50,
+      duration: 0.8,
+      delay: 0.2,
+      ease: 'power2.out'
+    });
+
+    // Services section animations
+    gsap.from(servicesRef.current, {
+      scrollTrigger: {
+        trigger: servicesRef.current,
+        start: 'top 80%',
+        toggleActions: 'play none none reverse'
+      },
+      opacity: 0,
+      y: 50,
+      duration: 0.6
+    });
+
+    serviceCardsRef.current.forEach((card, index) => {
+      if (card) {
+        gsap.from(card, {
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse'
+          },
+          opacity: 0,
+          y: 50,
+          duration: 0.6,
+          delay: index * 0.1
+        });
+      }
+    });
+
+    // Process section animations
+    gsap.from(processRef.current, {
+      scrollTrigger: {
+        trigger: processRef.current,
+        start: 'top 80%',
+        toggleActions: 'play none none reverse'
+      },
+      opacity: 0,
+      y: 50,
+      duration: 1
+    });
+
+    processStepsRef.current.forEach((step, index) => {
+      if (step) {
+        gsap.from(step, {
+          scrollTrigger: {
+            trigger: processRef.current,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse'
+          },
+          opacity: 0,
+          x: index % 2 === 0 ? -70 : 70,
+          duration: 1,
+          delay: index * 0.2
+        });
+      }
+    });
+
+    // FAQ section animations
+    gsap.from(faqRef.current, {
+      scrollTrigger: {
+        trigger: faqRef.current,
+        start: 'top 80%',
+        toggleActions: 'play none none reverse'
+      },
+      opacity: 0,
+      y: 50,
+      duration: 0.5
+    });
+
+    faqItemsRef.current.forEach((item, index) => {
+      if (item) {
+        gsap.from(item, {
+          scrollTrigger: {
+            trigger: item,
+            start: 'top 90%',
+            toggleActions: 'play none none reverse'
+          },
+          opacity: 0,
+          y: 30,
+          duration: 0.5,
+          delay: index * 0.1
+        });
+      }
+    });
+
+  }, { scope: containerRef });
+
   return (
     <>
- {/* Hero Section */}
- <section className="relative pt-32 pb-20 overflow-hidden">
-        {/* Background with gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-50 to-secondary-50 opacity-80"></div>
-        
-        {/* Animated background shapes */}
-        <div className="absolute inset-0">
-          <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-primary-200 rounded-full opacity-10 animate-pulse"></div>
-          <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-secondary-200 rounded-full opacity-10 animate-pulse"></div>
-        </div>
+      <div ref={containerRef}>
+        {/* Hero Section */}
+        <section className="relative pt-32 pb-20 overflow-hidden">
+          {/* Background with gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-50 to-secondary-50 opacity-80"></div>
 
-        {/* Content */}
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600 animate-slide-up">
-            My Services
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-700 mb-6 animate-slide-up leading-relaxed" style={{ animationDelay: '0.1s' }}>
-            Comprehensive web development and design solutions tailored to your business needs
-            </p>
+          {/* Animated background shapes */}
+          <div className="absolute inset-0">
+            <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-primary-200 rounded-full opacity-10 animate-pulse"></div>
+            <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-secondary-200 rounded-full opacity-10 animate-pulse"></div>
           </div>
-        </div>
-      </section>
 
- {/* Services Overview */}
-      <section className="section">
-        <div className="container mx-auto px-4">
-          <SectionHeading 
-            subtitle="WHAT I OFFER"
-            title="Comprehensive Web Solutions"
-            description="From concept to completion, I offer end-to-end services to bring your vision to life."
-          />
+          {/* Content */}
+          <div className="container mx-auto px-4 relative">
+            <div className="max-w-3xl mx-auto text-center">
+              <h1 ref={heroTitleRef} className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600 animate-slide-up">
+                My Services
+              </h1>
+              <p ref={heroTextRef} className="text-xl md:text-2xl text-gray-700 mb-6 animate-slide-up leading-relaxed" style={{ animationDelay: '0.1s' }}>
+                Comprehensive web development and design solutions tailored to your business needs
+              </p>
+            </div>
+          </div>
+        </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service, idx) => {
-              const Icon = iconMap[service.icon] || Layout;
-              return (
-                <ServiceCard
+        {/* Services Overview */}
+        <section className="section" ref={servicesRef}>
+          <div className="container mx-auto px-4">
+            <SectionHeading
+              subtitle="WHAT I OFFER"
+              title="Comprehensive Web Solutions"
+              description="From concept to completion, I offer end-to-end services to bring your vision to life."
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {services.map((service, idx) => (
+                <div
                   key={idx}
-                  icon={Icon}
-                  title={service.title}
-                  description={service.description}
-                  features={service.features}
-                  color={service.color}
-                />
-              );
-            })}
+                  ref={el => serviceCardsRef.current[idx] = el} // wrapper div ka ref
+                  className="service-card-wrapper"
+                >
+                  <ServiceCard
+                    icon={iconMap[service.icon] || Layout}
+                    title={service.title}
+                    description={service.description}
+                    features={service.features}
+                    color={service.color}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Process Section */}
-      <section className="section bg-gray-50">
-        <div className="container mx-auto px-4">
-          <SectionHeading 
-            subtitle="MY PROCESS"
-            title="How We'll Work Together"
-            description="A transparent, collaborative approach to ensure your project is completed efficiently and meets your expectations."
-          />
+        {/* Process Section */}
+        <section className="section bg-gray-50" ref={processRef}>
+          <div className="container mx-auto px-4">
+            <SectionHeading
+              subtitle="MY PROCESS"
+              title="How We'll Work Together"
+              description="A transparent, collaborative approach to ensure your project is completed efficiently and meets your expectations."
+            />
 
-          <div className="max-w-5xl mx-auto">
-            <div className="relative">
-              {/* Process line */}
-              <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-1 bg-primary-200 transform -translate-x-1/2"></div>
-              
-              {/* Steps */}
-              <div className="space-y-12 md:space-y-0">
-                {/* Step 1 */}
-                <div className="flex flex-col md:flex-row items-center">
-                  <div className="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0">
-                    <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-sm font-medium rounded-full mb-2">
-                      STEP 1
-                    </span>
-                    <h3 className="text-2xl font-bold mb-3">Discovery & Planning</h3>
-                    <p className="text-gray-600">
-                      We'll start with a detailed consultation to understand your business goals, target audience, and project requirements. Together, we'll develop a comprehensive project plan with clear deliverables and timelines.
-                    </p>
-                  </div>
-                  <div className="relative flex items-center justify-center w-12 h-12 bg-primary-600 text-white rounded-full font-bold z-10 mb-6 md:mb-0">
-                    1
-                  </div>
-                  <div className="md:w-1/2 md:pl-12 hidden md:block"></div>
-                </div>
+            <div className="max-w-5xl mx-auto">
+              <div className="relative">
+                {/* Process line */}
+                <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-1 bg-primary-200 transform -translate-x-1/2"></div>
 
-                {/* Step 2 */}
-                <div className="flex flex-col md:flex-row items-center">
-                  <div className="md:w-1/2 md:pr-12 hidden md:block"></div>
-                  <div className="relative flex items-center justify-center w-12 h-12 bg-primary-600 text-white rounded-full font-bold z-10 mb-6 md:mb-0">
-                    2
+                {/* Steps */}
+                <div className="space-y-12 md:space-y-0">
+                  {/* Step 1 */}
+                  <div className="flex flex-col md:flex-row items-center" ref={el => processStepsRef.current[0] = el}>
+                    <div className="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0">
+                      <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-sm font-medium rounded-full mb-2">
+                        STEP 1
+                      </span>
+                      <h3 className="text-2xl font-bold mb-3">Discovery & Planning</h3>
+                      <p className="text-gray-600">
+                        We'll start with a detailed consultation to understand your business goals, target audience, and project requirements. Together, we'll develop a comprehensive project plan with clear deliverables and timelines.
+                      </p>
+                    </div>
+                    <div className="relative flex items-center justify-center w-12 h-12 bg-primary-600 text-white rounded-full font-bold z-10 mb-6 md:mb-0">
+                      1
+                    </div>
+                    <div className="md:w-1/2 md:pl-12 hidden md:block"></div>
                   </div>
-                  <div className="md:w-1/2 md:pl-12 mb-6 md:mb-0">
-                    <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-sm font-medium rounded-full mb-2">
-                      STEP 2
-                    </span>
-                    <h3 className="text-2xl font-bold mb-3">Design & Prototyping</h3>
-                    <p className="text-gray-600">
-                      Based on our discovery phase, I'll create wireframes and design concepts for your approval. We'll refine these designs together until they perfectly match your vision and business needs.
-                    </p>
-                  </div>
-                </div>
 
-                {/* Step 3 */}
-                <div className="flex flex-col md:flex-row items-center">
-                  <div className="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0">
-                    <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-sm font-medium rounded-full mb-2">
-                      STEP 3
-                    </span>
-                    <h3 className="text-2xl font-bold mb-3">Development</h3>
-                    <p className="text-gray-600">
-                      With approved designs in hand, I'll begin development, building out your website or application with clean, efficient code. Regular updates will keep you informed of progress throughout this phase.
-                    </p>
+                  {/* Step 2 */}
+                  <div className="flex flex-col md:flex-row items-center" ref={el => processStepsRef.current[1] = el}>
+                    <div className="md:w-1/2 md:pr-12 hidden md:block"></div>
+                    <div className="relative flex items-center justify-center w-12 h-12 bg-primary-600 text-white rounded-full font-bold z-10 mb-6 md:mb-0">
+                      2
+                    </div>
+                    <div className="md:w-1/2 md:pl-12 mb-6 md:mb-0">
+                      <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-sm font-medium rounded-full mb-2">
+                        STEP 2
+                      </span>
+                      <h3 className="text-2xl font-bold mb-3">Design & Prototyping</h3>
+                      <p className="text-gray-600">
+                        Based on our discovery phase, I'll create wireframes and design concepts for your approval. We'll refine these designs together until they perfectly match your vision and business needs.
+                      </p>
+                    </div>
                   </div>
-                  <div className="relative flex items-center justify-center w-12 h-12 bg-primary-600 text-white rounded-full font-bold z-10 mb-6 md:mb-0">
-                    3
-                  </div>
-                  <div className="md:w-1/2 md:pl-12 hidden md:block"></div>
-                </div>
 
-                {/* Step 4 */}
-                <div className="flex flex-col md:flex-row items-center">
-                  <div className="md:w-1/2 md:pr-12 hidden md:block"></div>
-                  <div className="relative flex items-center justify-center w-12 h-12 bg-primary-600 text-white rounded-full font-bold z-10 mb-6 md:mb-0">
-                    4
+                  {/* Step 3 */}
+                  <div className="flex flex-col md:flex-row items-center" ref={el => processStepsRef.current[2] = el}>
+                    <div className="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0">
+                      <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-sm font-medium rounded-full mb-2">
+                        STEP 3
+                      </span>
+                      <h3 className="text-2xl font-bold mb-3">Development</h3>
+                      <p className="text-gray-600">
+                        With approved designs in hand, I'll begin development, building out your website or application with clean, efficient code. Regular updates will keep you informed of progress throughout this phase.
+                      </p>
+                    </div>
+                    <div className="relative flex items-center justify-center w-12 h-12 bg-primary-600 text-white rounded-full font-bold z-10 mb-6 md:mb-0">
+                      3
+                    </div>
+                    <div className="md:w-1/2 md:pl-12 hidden md:block"></div>
                   </div>
-                  <div className="md:w-1/2 md:pl-12 mb-6 md:mb-0">
-                    <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-sm font-medium rounded-full mb-2">
-                      STEP 4
-                    </span>
-                    <h3 className="text-2xl font-bold mb-3">Testing & Refinement</h3>
-                    <p className="text-gray-600">
-                      Comprehensive testing across devices and browsers ensures everything works flawlessly. We'll make any necessary adjustments to perfect the user experience and functionality.
-                    </p>
-                  </div>
-                </div>
 
-                {/* Step 5 */}
-                <div className="flex flex-col md:flex-row items-center">
-                  <div className="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0">
-                    <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-sm font-medium rounded-full mb-2">
-                      STEP 5
-                    </span>
-                    <h3 className="text-2xl font-bold mb-3">Launch & Support</h3>
-                    <p className="text-gray-600">
-                      Once everything is ready, we'll launch your project to the world. I'll provide training for content management and ongoing support to ensure your continued success.
-                    </p>
+                  {/* Step 4 */}
+                  <div className="flex flex-col md:flex-row items-center" ref={el => processStepsRef.current[3] = el}>
+                    <div className="md:w-1/2 md:pr-12 hidden md:block"></div>
+                    <div className="relative flex items-center justify-center w-12 h-12 bg-primary-600 text-white rounded-full font-bold z-10 mb-6 md:mb-0">
+                      4
+                    </div>
+                    <div className="md:w-1/2 md:pl-12 mb-6 md:mb-0">
+                      <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-sm font-medium rounded-full mb-2">
+                        STEP 4
+                      </span>
+                      <h3 className="text-2xl font-bold mb-3">Testing & Refinement</h3>
+                      <p className="text-gray-600">
+                        Comprehensive testing across devices and browsers ensures everything works flawlessly. We'll make any necessary adjustments to perfect the user experience and functionality.
+                      </p>
+                    </div>
                   </div>
-                  <div className="relative flex items-center justify-center w-12 h-12 bg-primary-600 text-white rounded-full font-bold z-10">
-                    5
+
+                  {/* Step 5 */}
+                  <div className="flex flex-col md:flex-row items-center" ref={el => processStepsRef.current[4] = el}>
+                    <div className="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0">
+                      <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-sm font-medium rounded-full mb-2">
+                        STEP 5
+                      </span>
+                      <h3 className="text-2xl font-bold mb-3">Launch & Support</h3>
+                      <p className="text-gray-600">
+                        Once everything is ready, we'll launch your project to the world. I'll provide training for content management and ongoing support to ensure your continued success.
+                      </p>
+                    </div>
+                    <div className="relative flex items-center justify-center w-12 h-12 bg-primary-600 text-white rounded-full font-bold z-10">
+                      5
+                    </div>
+                    <div className="md:w-1/2 md:pl-12 hidden md:block"></div>
                   </div>
-                  <div className="md:w-1/2 md:pl-12 hidden md:block"></div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Pricing Section */}
-     {/* <section className="section">
+        {/* Pricing Section */}
+        {/* <section className="section">
         <div className="container mx-auto px-4">
           <SectionHeading 
             subtitle="PRICING"
@@ -415,62 +539,63 @@ const ServicesPage = () => {
         </div>
       </section> */}
 
-      {/* FAQs Section */}
-      <section className="section bg-gray-50">
-        <div className="container mx-auto px-4">
-          <SectionHeading 
-            subtitle="FAQ"
-            title="Frequently Asked Questions"
-            description="Answers to common questions about my services and process."
-          />
+        {/* FAQs Section */}
+        <section className="section bg-gray-50">
+          <div className="container mx-auto px-4">
+            <SectionHeading
+              subtitle="FAQ"
+              title="Frequently Asked Questions"
+              description="Answers to common questions about my services and process."
+            />
 
-          <div className="max-w-3xl mx-auto">
-            <div className="space-y-6">
-              <div className="card p-6">
-                <h3 className="text-lg font-bold mb-2">How long does it take to complete a website?</h3>
-                <p className="text-gray-700">
-                  Project timelines vary depending on complexity and scope. A basic Mern based website typically takes 2-4 days, while more complex projects like Mern Based e-commerce sites with admin panel and dashboard functionality may take 1-2 weeks. I'll provide a detailed timeline during our initial consultation.
-                </p>
-              </div>
+            <div className="max-w-3xl mx-auto">
+              <div className="space-y-6">
+                <div className="card p-6" ref={el => faqItemsRef.current[0] = el}>
+                  <h3 className="text-lg font-bold mb-2">How long does it take to complete a website?</h3>
+                  <p className="text-gray-700">
+                    Project timelines vary depending on complexity and scope. A basic Mern based website typically takes 2-4 days, while more complex projects like Mern Based e-commerce sites with admin panel and dashboard functionality may take 1-2 weeks. I'll provide a detailed timeline during our initial consultation.
+                  </p>
+                </div>
 
-              <div className="card p-6">
-                <h3 className="text-lg font-bold mb-2">Do you offer website maintenance services?</h3>
-                <p className="text-gray-700">
-                  Yes, I offer ongoing maintenance packages to keep your website secure, up-to-date, and performing optimally. These services include regular updates, security monitoring, backups, and technical support.
-                </p>
-              </div>
+                <div className="card p-6" ref={el => faqItemsRef.current[1] = el}>
+                  <h3 className="text-lg font-bold mb-2">Do you offer website maintenance services?</h3>
+                  <p className="text-gray-700">
+                    Yes, I offer ongoing maintenance packages to keep your website secure, up-to-date, and performing optimally. These services include regular updates, security monitoring, backups, and technical support.
+                  </p>
+                </div>
 
-              <div className="card p-6">
-                <h3 className="text-lg font-bold mb-2">What is your payment structure?</h3>
-                <p className="text-gray-700">
-                  I typically require a 50% deposit to begin work, with the remaining balance due upon project completion. For larger projects, we can arrange a phased payment schedule tied to project milestones.
-                </p>
-              </div>
+                <div className="card p-6" ref={el => faqItemsRef.current[2] = el}>
+                  <h3 className="text-lg font-bold mb-2">What is your payment structure?</h3>
+                  <p className="text-gray-700">
+                    I typically require a 50% deposit to begin work, with the remaining balance due upon project completion. For larger projects, we can arrange a phased payment schedule tied to project milestones.
+                  </p>
+                </div>
 
-              <div className="card p-6">
-                <h3 className="text-lg font-bold mb-2">Will my website be mobile-friendly?</h3>
-                <p className="text-gray-700">
-                  Absolutely! All websites I create are fully responsive, ensuring they look and function perfectly on all devices, from desktops to smartphones. Mobile optimization is a standard part of every project.
-                </p>
-              </div>
+                <div className="card p-6" ref={el => faqItemsRef.current[3] = el}>
+                  <h3 className="text-lg font-bold mb-2">Will my website be mobile-friendly?</h3>
+                  <p className="text-gray-700">
+                    Absolutely! All websites I create are fully responsive, ensuring they look and function perfectly on all devices, from desktops to smartphones. Mobile optimization is a standard part of every project.
+                  </p>
+                </div>
 
-              <div className="card p-6">
-                <h3 className="text-lg font-bold mb-2">Can you help with hosting and domain registration?</h3>
-                <p className="text-gray-700">
-                  Yes, I can assist with selecting the right hosting provider and registering your domain name. I'll also handle the technical setup to ensure your website is properly configured and secure.
-                </p>
-              </div>
+                <div className="card p-6" ref={el => faqItemsRef.current[4] = el}>
+                  <h3 className="text-lg font-bold mb-2">Can you help with hosting and domain registration?</h3>
+                  <p className="text-gray-700">
+                    Yes, I can assist with selecting the right hosting provider and registering your domain name. I'll also handle the technical setup to ensure your website is properly configured and secure.
+                  </p>
+                </div>
 
-              <div className="card p-6">
-                <h3 className="text-lg font-bold mb-2">Do you provide content for the website?</h3>
-                <p className="text-gray-700">
-                  While I focus primarily on design and development, I can provide basic content guidance and structure. For comprehensive content creation, I can recommend professional copywriters who specialize in web content.
-                </p>
+                <div className="card p-6" ref={el => faqItemsRef.current[5] = el}>
+                  <h3 className="text-lg font-bold mb-2">Do you provide content for the website?</h3>
+                  <p className="text-gray-700">
+                    While I focus primarily on design and development, I can provide basic content guidance and structure. For comprehensive content creation, I can recommend professional copywriters who specialize in web content.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </>
   );
 };

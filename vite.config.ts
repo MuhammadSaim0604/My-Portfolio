@@ -10,5 +10,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
+    include: ["gsap/CSSPlugin", "gsap/ScrollTrigger", "@gsap/react"]
   },
 });

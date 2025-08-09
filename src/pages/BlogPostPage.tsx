@@ -8,7 +8,7 @@ const blogPost = {
   date: "March 15, 2025",
   readTime: 8,
   author: {
-    name: "Ali Rizwan",
+    name: "Muhammad Saim",
     image: "https://images.pexels.com/photos/3785104/pexels-photo-3785104.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
     role: "Web Developer & Designer"
   },

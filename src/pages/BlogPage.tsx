@@ -294,7 +294,7 @@ const BlogPage = () => {
                     className="w-16 h-16 rounded-full object-cover mr-4"
                   />
                   <div>
-                    <h4 className="font-semibold">Ali Rizwan</h4>
+                    <h4 className="font-semibold">Muhammad Saim</h4>
                     <p className="text-sm text-gray-600">Web Developer & Designer</p>
                   </div>
                 </div>
