@@ -29,12 +29,9 @@ const SectionHeading = ({
       )} */}
 
       <Typewriter
-            words={["Software Engineer", "Full Stack Developer", "MERN Stack Enthusiast", "WordPress Developer", "No-Code or Zero Code Expert","UI/UX Designer"]}
+            words={["Software Engineer...", "Full Stack Developer...", "MERN Stack Enthusiast...", "WordPress Developer...", "No-Code or Zero Code Expert...", "UI/UX Designer..."]}
             loop={5}
             cursor
-            // cursorStyle='|_'
-
-
           />
       </span></span>}</h2>
       {description && <p className="text-gray-600 text-lg">{description}</p>}
